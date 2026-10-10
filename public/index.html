@@ -1,0 +1,2706 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sports Facility Management System | Ahmedabad University</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        /* Precision brand colors extracted from Ahmedabad University identity */
+        .brand-maroon { background-color: #7A1A1A; }
+        .text-brand-maroon { color: #7A1A1A; }
+        .border-brand-maroon { border-color: #7A1A1A; }
+        .focus-ring:focus { border-color: #7A1A1A; ring-color: #7A1A1A; }
+        
+        /* Multiple select custom styling */
+        select[multiple] option:checked { background: #7A1A1A; color: white; }
+    </style>
+</head>
+<body class="bg-gray-50 font-sans text-gray-800 antialiased min-h-screen">
+
+    <div id="login-view" class="flex flex-col justify-center items-center min-h-screen px-4">
+        <div class="bg-white p-8 rounded-lg shadow-sm border border-gray-100 max-w-md w-full text-center">
+            <img src="logo.png" alt="Ahmedabad University Logo" class="h-20 mx-auto mb-6 object-contain">
+            <h1 id="login-title" class="text-xl font-bold tracking-tight text-gray-900 mb-1">Sports Facility Portal</h1>
+            <p id="login-desc" class="text-sm text-gray-500 mb-6">Sign in with authorized university credentials</p>
+            
+            <div id="login-error" class="hidden mb-4 p-3 rounded bg-red-50 text-red-700 text-xs text-left border border-red-200"></div>
+
+            <form id="login-form" class="space-y-4 text-left" autocomplete="off">
+                <div>
+                    <label class="block text-xs font-semibold uppercase tracking-wider text-gray-600 mb-1">Username</label>
+                    <input type="text" id="login-username" readonly onfocus="this.removeAttribute('readonly')" autocomplete="off" autocapitalize="off" spellcheck="false" required class="w-full px-3 py-2 border border-gray-300 rounded focus:outline-none focus:border-gray-500 text-sm">
+                </div>
+                <div>
+                    <div class="flex justify-between items-center mb-1">
+                        <label class="block text-xs font-semibold uppercase tracking-wider text-gray-600">Password</label>
+                        <button type="button" onclick="toggleForgotPasswordView(true)" class="text-xs text-red-700 hover:underline font-medium">Forgot Password?</button>
+                    </div>
+                    <input type="password" id="login-password" required class="w-full px-3 py-2 border border-gray-300 rounded focus:outline-none focus:border-gray-500 text-sm">
+                </div>
+                <button type="submit" class="w-full brand-maroon text-white py-2 px-4 rounded text-sm font-medium hover:bg-opacity-90 transition-all duration-150 shadow-sm mt-2">
+                    Authenticate User
+                </button>
+            </form>
+            <div id="forgot-form" class="hidden space-y-4 text-left">
+                <div id="forgot-message" class="hidden p-3 rounded text-xs leading-relaxed border"></div>
+                <form id="forgot-username-form" class="space-y-4" autocomplete="off">
+                    <div>
+                        <label class="block text-xs font-semibold uppercase tracking-wider text-gray-600 mb-1" for="forgot-username">Username</label>
+                        <input type="text" id="forgot-username" required maxlength="100" autocomplete="username" autocapitalize="off" spellcheck="false" class="w-full px-3 py-2 border border-gray-300 rounded focus:outline-none focus:border-gray-500 text-sm" placeholder="Enter your username">
+                    </div>
+                    <button type="submit" id="forgot-send-btn" class="w-full brand-maroon text-white py-2 px-4 rounded text-sm font-medium hover:bg-opacity-90 transition-all duration-150 shadow-sm">Send Reset OTP</button>
+                </form>
+
+                <form id="forgot-reset-form" class="hidden space-y-4" autocomplete="off">
+                    <input type="hidden" id="forgot-reset-token">
+                    <div>
+                        <label class="block text-xs font-semibold uppercase tracking-wider text-gray-600 mb-1" for="forgot-otp">6-Digit OTP</label>
+                        <input type="text" id="forgot-otp" inputmode="numeric" pattern="[0-9]{6}" maxlength="6" autocomplete="one-time-code" required class="w-full px-3 py-2 border border-gray-300 rounded focus:outline-none focus:border-gray-500 text-sm tracking-[0.3em]" placeholder="Enter OTP">
+                        <div class="flex items-center justify-between mt-2 text-[11px]">
+                            <span id="forgot-otp-timer" class="font-semibold text-brand-maroon" aria-live="polite">OTP expires in 02:00</span>
+                            <span id="forgot-resend-timer" class="text-gray-500"></span>
+                        </div>
+                    </div>
+                    <div>
+                        <label class="block text-xs font-semibold uppercase tracking-wider text-gray-600 mb-1" for="forgot-new-password">New Password</label>
+                        <input type="password" id="forgot-new-password" minlength="8" maxlength="128" autocomplete="new-password" required class="w-full px-3 py-2 border border-gray-300 rounded focus:outline-none focus:border-gray-500 text-sm" placeholder="New password">
+                    </div>
+                    <div>
+                        <label class="block text-xs font-semibold uppercase tracking-wider text-gray-600 mb-1" for="forgot-confirm-password">Confirm New Password</label>
+                        <input type="password" id="forgot-confirm-password" minlength="8" maxlength="128" autocomplete="new-password" required class="w-full px-3 py-2 border border-gray-300 rounded focus:outline-none focus:border-gray-500 text-sm" placeholder="Confirm new password">
+                    </div>
+                    <div class="flex gap-2">
+                        <button type="submit" id="forgot-reset-btn" class="flex-1 brand-maroon text-white py-2 px-4 rounded text-sm font-medium hover:bg-opacity-90 transition-all duration-150 shadow-sm">Reset Password</button>
+                        <button type="button" id="forgot-resend-btn" disabled class="px-4 py-2 border border-gray-300 rounded text-xs font-semibold text-gray-400 cursor-not-allowed">Resend OTP</button>
+                    </div>
+                </form>
+                <button type="button" onclick="toggleForgotPasswordView(false)" class="w-full text-center text-xs text-gray-500 hover:text-gray-800 font-medium pt-2 block">&larr; Return to Sign In Screen</button>
+            </div></div>
+        </div>
+    </div>
+
+    <div id="app-view" class="hidden min-h-screen flex flex-col">
+        <header class="bg-white border-b border-gray-200 sticky top-0 z-50 px-6 py-3 flex justify-between items-center shadow-xs">
+            <div class="flex items-center space-x-4">
+                <img src="logo.png" alt="AU Logo" class="h-10 object-contain">
+                <div class="border-l border-gray-300 h-10 pl-4 flex flex-col justify-center">
+                    <span class="text-sm font-bold tracking-tight text-gray-900 leading-tight">Sports Facility Registry</span>
+                    <div class="flex items-center gap-1.5 mt-0.5">
+                        <span id="user-badge-name" class="text-[11px] font-bold text-brand-maroon"></span>
+                        <span class="text-[10px] text-gray-300">|</span>
+                        <span id="user-badge-role" class="text-[11px] uppercase tracking-wide font-bold text-gray-500"></span>
+                        <span class="text-[10px] text-gray-300">|</span>
+                        <span id="user-badge-email" class="text-[11px] text-gray-500 truncate max-w-[260px]"></span>
+                    </div>
+                </div>
+            </div>
+            <div class="flex items-center space-x-4">
+                <nav id="nav-menu" class="flex space-x-1 text-sm mr-4">
+                    <button onclick="switchTab('booking-tab')" id="btn-booking-tab" class="px-3 py-1.5 font-medium rounded text-brand-maroon bg-red-50">New Booking</button>
+                    <button onclick="switchTab('active-tab')" id="btn-active-tab" class="px-3 py-1.5 font-medium rounded text-gray-600 hover:text-gray-900">Active Slots</button>
+                    <button onclick="switchTab('history-tab')" id="btn-history-tab" class="px-3 py-1.5 font-medium rounded text-gray-600 hover:text-gray-900">Audit History</button>
+                    <button onclick="switchTab('search-tab')" id="btn-search-tab" class="px-3 py-1.5 font-medium rounded text-gray-600 hover:text-gray-900">Search Student</button>
+                    <button onclick="switchTab('daily-tab')" id="btn-daily-tab" class="px-3 py-1.5 font-medium rounded text-gray-600 hover:text-gray-900">Daily Report</button>
+                    <button onclick="switchTab('admin-tab')" id="btn-admin-tab" class="hidden px-3 py-1.5 font-medium rounded text-gray-600 hover:text-gray-900 border border-dashed border-red-300">Admin Panel</button>
+                </nav>
+                <button onclick="requestLogout()" class="text-xs font-semibold text-gray-500 hover:text-red-700 bg-gray-100 hover:bg-red-50 px-3 py-1.5 rounded transition-all">
+                    Secure Log Out
+                </button>
+            </div>
+        </header>
+
+        <main class="flex-1 max-w-7xl w-full mx-auto p-6">
+            <div id="dashboard-alert" class="hidden mb-6 p-4 rounded-lg text-sm font-bold shadow-sm transition-all border"></div>
+
+            <section id="booking-tab" class="tab-content space-y-6">
+                <div class="bg-white p-6 rounded-lg shadow-sm border border-gray-200">
+                    <div class="flex justify-between items-center mb-4 border-b pb-2">
+                        <h2 class="text-base font-bold text-gray-900">Step 1: Smart Student Verification</h2>
+                        <button type="button" onclick="clearDashboardState()" title="Clear current student/booking selections" class="text-gray-400 hover:text-brand-maroon transition-colors p-1 rounded hover:bg-gray-50 flex-shrink-0">
+                            <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                                <path stroke-linecap="round" stroke-linejoin="round" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
+                            </svg>
+                        </button>
+                    </div>
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <div>
+                            <label class="block text-xs font-bold text-gray-600 uppercase mb-1">Enrollment Number (Primary Identifier)</label>
+                            <input type="text" id="book-roll" placeholder="Enter student enrollment number" class="w-full px-3 py-2 border border-gray-300 rounded text-sm focus:outline-none focus:border-brand-maroon">
+                            <p class="text-[11px] text-gray-400 mt-1">Press TAB or click outside to instantly check existence.</p>
+                        </div>
+                        <div>
+                            <label class="block text-xs font-bold text-gray-600 uppercase mb-1">Student Full Name</label>
+                            <input type="text" id="book-name" disabled class="w-full px-3 py-2 bg-gray-100 border border-gray-300 rounded text-sm focus:outline-none text-gray-700">
+                        </div>
+                    </div>
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mt-4">
+                        <div>
+                            <label class="block text-xs font-bold text-gray-600 uppercase mb-1">Email ID</label>
+                            <input type="text" id="book-email" disabled placeholder="xyz or xyz@ahduni.edu.in" class="w-full px-3 py-2 bg-gray-100 border border-gray-300 rounded text-sm focus:outline-none focus:border-brand-maroon text-gray-700">
+                        </div>
+                    </div>
+                </div>
+
+                <div class="bg-white p-6 rounded-lg shadow-sm border border-gray-200">
+                    <h2 class="text-base font-bold text-gray-900 mb-4 border-b pb-2">Step 2: Resource Allocation & Schedule Timings</h2>
+                    <form id="booking-form" class="space-y-4">
+                        <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                            <div>
+                                <label class="block text-xs font-bold text-gray-600 uppercase mb-1">Booking Date</label>
+                                <input type="date" id="book-date" required class="w-full px-3 py-2 border border-gray-300 rounded text-sm focus:outline-none focus:border-brand-maroon">
+                            </div>
+                            <div>
+                                <label class="block text-xs font-bold text-gray-600 uppercase mb-1">Reservation Start Time</label>
+                                <input type="time" id="book-start" required class="w-full px-3 py-2 border border-gray-300 rounded text-sm focus:outline-none focus:border-brand-maroon">
+                            </div>
+                            <div>
+                                <label class="block text-xs font-bold text-gray-600 uppercase mb-1">Reservation End Time</label>
+                                <input type="time" id="book-end" required class="w-full px-3 py-2 border border-gray-300 rounded text-sm focus:outline-none focus:border-brand-maroon">
+                            </div>
+                        </div>
+
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-4 pt-2">
+                            <div>
+                                <label class="block text-xs font-bold text-gray-600 uppercase mb-1">Select Sport Category</label>
+                                <select id="book-sport" required class="w-full px-3 py-2 border border-gray-300 rounded text-sm focus:outline-none focus:border-brand-maroon">
+                                    <option value="">-- Choose Date & Time First --</option>
+                                </select>
+                            </div>
+                            <div>
+                                <label class="block text-xs font-bold text-gray-600 uppercase mb-1">Assign Court / Ground Allocation</label>
+                                <select id="book-court" required class="w-full px-3 py-2 border border-gray-300 rounded text-sm focus:outline-none focus:border-brand-maroon">
+                                    <option value="">-- Select Date, Time & Sport First --</option>
+                                </select>
+                                <p id="book-court-msg" class="hidden text-[11px] text-red-600 font-semibold mt-1">No court available for the selected date and time.</p>
+                            </div>
+                        </div>
+
+                        <div class="pt-4 border-t mt-4">
+                            <div class="flex flex-wrap items-end justify-between gap-3 mb-3">
+                                <div>
+                                    <label class="block text-xs font-bold text-gray-600 uppercase mb-1" for="additional-player-count">Additional Players</label>
+                                    <select id="additional-player-count" class="px-3 py-2 border border-gray-300 rounded text-sm focus:outline-none focus:border-brand-maroon">
+                                        <option value="0">0 — Primary student only</option>
+                                        <option value="1">1</option><option value="2">2</option><option value="3">3</option><option value="4">4</option><option value="5">5</option>
+                                        <option value="6">6</option><option value="7">7</option><option value="8">8</option><option value="9">9</option><option value="10">10</option>
+                                    </select>
+                                </div>
+                                <p class="text-[11px] text-gray-400 max-w-lg">Enter an enrollment number for each additional player; their name and email are filled only from the current Student Master Database.</p>
+                            </div>
+                            <div id="additional-players-container" class="space-y-3"></div>
+                        </div>
+
+                        <div class="pt-4 border-t mt-4 flex justify-end">
+                            <button type="submit" class="brand-maroon text-white py-2 px-6 rounded text-sm font-semibold hover:bg-opacity-90 shadow transition-all">
+                                Validate & Finalize Booking Session
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </section>
+
+            <section id="active-tab" class="tab-content hidden space-y-4">
+                <!-- Grouped Bulk Events Dynamic Render Block -->
+                <div id="active-bulk-events-container"></div>
+                <div id="future-bulk-events-container"></div>
+                
+                <div class="bg-white rounded-lg border border-gray-200 shadow-sm overflow-hidden mt-6">
+                    <div class="px-6 py-4 border-b border-gray-200 flex justify-between items-center bg-gray-50">
+                        <h3 class="text-sm font-bold uppercase tracking-wider text-gray-700">Live Active Allocations (Normal Bookings)</h3>
+                        <span class="text-xs text-gray-500">Currently deployed individual reservations running at this moment.</span>
+                    </div>
+                    <div class="overflow-x-auto">
+                        <table class="w-full text-left text-sm text-gray-500">
+                            <thead class="bg-gray-100 text-xs font-bold uppercase text-gray-700 tracking-wider">
+                                <tr>
+                                    <th class="px-6 py-3">Identifier</th>
+                                    <th class="px-6 py-3">Account Reference</th>
+                                    <th class="px-6 py-3">Assigned Asset</th>
+                                    <th class="px-6 py-3">Scheduled Slot</th>
+                                    <th class="px-6 py-3 text-right">Action Interface</th>
+                                </tr>
+                            </thead>
+                            <tbody id="active-bookings-table" class="divide-y divide-gray-200 text-gray-900 font-medium"></tbody>
+                        </table>
+                    </div>
+                </div>
+
+                <div id="future-bookings-container" class="space-y-4 mt-8"></div>
+            </section>
+
+            <section id="history-tab" class="tab-content hidden space-y-4">
+                <!-- Grouped Bulk Event Audit Dynamic Render Block -->
+                <div id="history-bulk-events-container"></div>
+                
+                <div class="bg-white rounded-lg border border-gray-200 shadow-sm overflow-hidden mt-6">
+                    <div class="px-6 py-4 border-b border-gray-200 bg-gray-50">
+                        <h3 class="text-sm font-bold uppercase tracking-wider text-gray-700">Permanent System Booking Log Ledger (Normal Bookings)</h3>
+                    </div>
+                    <div class="overflow-x-auto">
+                        <table class="w-full text-left text-sm text-gray-500">
+                            <thead class="bg-gray-100 text-xs font-bold uppercase text-gray-700 tracking-wider">
+                                <tr>
+                                    <th class="px-6 py-3">Token</th>
+                                    <th class="px-6 py-3">Entity Name</th>
+                                    <th class="px-6 py-3">Activity Resource</th>
+                                    <th class="px-6 py-3">Date</th>
+                                    <th class="px-6 py-3">Timeframe Slot</th>
+                                    <th class="px-6 py-3">Status Condition</th>
+                                </tr>
+                            </thead>
+                            <tbody id="history-bookings-table" class="divide-y divide-gray-200 text-gray-900"></tbody>
+                        </table>
+                    </div>
+                </div>
+            </section>
+            
+            <!-- STUDENT SEARCH TAB -->
+            <section id="search-tab" class="tab-content hidden space-y-6">
+                <div class="bg-white p-6 rounded-lg shadow-sm border border-gray-200">
+                    <h2 class="text-base font-bold text-gray-900 mb-4 border-b pb-2">Student Booking Ledger Lookup</h2>
+                    <form id="student-search-form" class="flex flex-col md:flex-row gap-4">
+                        <div class="flex-1">
+                            <label class="block text-xs font-bold text-gray-600 uppercase mb-1">Enter Student Enrollment Number</label>
+                            <input type="text" id="search-roll-number" placeholder="e.g. 23CS101" required class="w-full px-3 py-2 border border-gray-300 rounded text-sm focus:outline-none focus:border-brand-maroon">
+                        </div>
+                        <div class="flex items-end">
+                            <button type="submit" class="brand-maroon text-white py-2 px-6 rounded text-sm font-semibold hover:bg-opacity-90 shadow transition-all">
+                                Search Records
+                            </button>
+                        </div>
+                    </form>
+
+                </div>
+                
+                <div id="search-results-container" class="hidden space-y-6">
+                    <div class="bg-white p-5 rounded-lg border border-gray-200 shadow-sm">
+                        <div class="flex justify-between items-center gap-4 mb-3">
+                            <span class="text-xs uppercase font-bold tracking-widest text-gray-400">Student Details</span>
+                            <button type="button" onclick="clearStudentSearchResults()" title="Clear searched student from view" class="text-gray-400 hover:text-brand-maroon transition-colors p-1 rounded hover:bg-gray-50">
+                                <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                                    <path stroke-linecap="round" stroke-linejoin="round" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
+                                </svg>
+                            </button>
+                        </div>
+                        <div class="flex flex-wrap gap-8">
+                            <div>
+                                <span class="block text-xs uppercase font-bold tracking-widest text-gray-400">Student Name</span>
+                                <span id="search-res-name" class="text-sm font-bold text-gray-900 mt-1 block"></span>
+                            </div>
+                            <div>
+                                <span class="block text-xs uppercase font-bold tracking-widest text-gray-400">Enrollment Number</span>
+                                <span id="search-res-roll" class="text-sm font-bold text-gray-900 mt-1 block"></span>
+                            </div>
+                            <div>
+                                <span class="block text-xs uppercase font-bold tracking-widest text-gray-400">Email ID</span>
+                                <span id="search-res-email" class="text-sm font-bold text-gray-900 mt-1 block"></span>
+                            </div>
+                        </div>
+                        <div class="mt-4 pt-4 border-t border-gray-100">
+                            <button type="button" id="btn-edit-student" onclick="openStudentEditForm()" class="bg-gray-700 text-white text-xs font-semibold px-3 py-1.5 rounded hover:bg-gray-800 transition-colors">Edit Student Details</button>
+                            <form id="student-edit-form" class="hidden mt-4 grid grid-cols-1 md:grid-cols-3 gap-4">
+                                <div><label class="block text-xs font-bold text-gray-600 uppercase mb-1">Enrollment Number</label><input id="edit-student-roll" required maxlength="50" class="w-full px-3 py-2 border border-gray-300 rounded text-sm"></div>
+                                <div><label class="block text-xs font-bold text-gray-600 uppercase mb-1">Name</label><input id="edit-student-name" required maxlength="100" class="w-full px-3 py-2 border border-gray-300 rounded text-sm"></div>
+                                <div><label class="block text-xs font-bold text-gray-600 uppercase mb-1">Email ID</label><input id="edit-student-email" type="text" required maxlength="150" class="w-full px-3 py-2 border border-gray-300 rounded text-sm"></div>
+                                <div class="md:col-span-3 flex gap-2"><button type="submit" class="brand-maroon text-white text-xs font-semibold px-4 py-2 rounded">Save Changes</button><button type="button" onclick="closeStudentEditForm()" class="bg-gray-200 text-gray-800 text-xs font-semibold px-4 py-2 rounded">Cancel</button></div>
+                            </form>
+                        </div>
+                    </div>
+
+                    <!-- RESTRICTED LIST STATUS & CONTROLS -->
+                    <div class="bg-white p-5 rounded-lg border border-gray-200 shadow-sm">
+                        <div class="flex flex-wrap justify-between items-center gap-3 mb-2">
+                            <span class="text-xs uppercase font-bold tracking-widest text-gray-400">Restricted List Status</span>
+                            <div class="flex gap-2">
+                                <button type="button" onclick="openBlacklistModal()" class="bg-red-800 text-white text-xs font-semibold px-3 py-1.5 rounded hover:bg-red-900 transition-colors">Impose Booking Restriction</button>
+                                <button type="button" id="btn-remove-blacklist" onclick="openRemoveBlacklistModal()" class="hidden bg-gray-700 text-white text-xs font-semibold px-3 py-1.5 rounded hover:bg-gray-800 transition-colors">Remove Restriction</button>
+                            </div>
+                        </div>
+                        <div id="blacklist-status-body" class="text-sm"></div>
+                        <div id="blacklist-history-body" class="text-xs text-gray-500 mt-3"></div>
+                    </div>
+
+                    <div id="search-bookings-container" class="space-y-6"></div>
+                </div>
+
+                <div id="search-empty-state" class="hidden bg-white p-8 rounded-lg shadow-sm border border-gray-200 text-center">
+                    <p class="text-sm text-gray-500 font-medium" id="search-empty-msg"></p>
+                </div>
+            </section>
+
+            <!-- DATE-RANGE EXCEL BOOKING REPORT -->
+            <section id="daily-tab" class="tab-content hidden space-y-6">
+                <div class="bg-white p-6 rounded-lg shadow-sm border border-gray-200">
+                    <div class="flex flex-col lg:flex-row lg:justify-between lg:items-end gap-4">
+                        <div>
+                            <h2 class="text-base font-bold text-gray-900">Sports Booking Report</h2>
+                            <p class="text-xs text-gray-500 mt-1">Select an inclusive booking-date range and download a sport-wise Excel report.</p>
+                        </div>
+                        <div class="flex flex-col sm:flex-row sm:items-end gap-3">
+                            <div>
+                                <label for="report-from-date" class="block text-xs font-bold text-gray-600 uppercase mb-1">From Date</label>
+                                <input type="date" id="report-from-date" class="px-3 py-2 border border-gray-300 rounded text-sm focus:outline-none focus:border-brand-maroon">
+                            </div>
+                            <div>
+                                <label for="report-to-date" class="block text-xs font-bold text-gray-600 uppercase mb-1">To Date</label>
+                                <input type="date" id="report-to-date" class="px-3 py-2 border border-gray-300 rounded text-sm focus:outline-none focus:border-brand-maroon">
+                            </div>
+                            <div class="flex gap-2 flex-wrap"><button type="button" id="download-daily-report-btn" onclick="downloadDateRangeReport()" class="brand-maroon text-white text-xs font-semibold px-4 py-2 rounded hover:bg-opacity-90 transition-colors">Download Excel Report</button><button type="button" id="download-bulk-report-btn" onclick="downloadBulkBookingReport()" class="bg-gray-800 text-white text-xs font-semibold px-4 py-2 rounded hover:bg-gray-900 transition-colors">Download Bulk Booking Excel</button></div>
+                        </div>
+                    </div>
+                    <div id="daily-report-range-error" class="hidden mt-4 p-3 rounded bg-red-50 text-red-700 text-xs border border-red-200"></div>
+                    <p class="text-xs text-gray-500 mt-4" id="daily-report-date"></p>
+                </div>
+                <div class="flex justify-end">
+                    <button type="button" onclick="loadDailyReport()" class="bg-gray-700 text-white text-xs font-semibold px-3 py-1.5 rounded hover:bg-gray-800 transition-colors">Refresh Today's On-Screen View</button>
+                </div>
+                <div id="daily-report-container" class="space-y-6"></div>
+            </section>
+
+            <section id="admin-tab" class="tab-content hidden space-y-6">
+                <div class="bg-white p-6 rounded-lg border border-red-300 shadow-md mb-6">
+                    <h3 class="font-bold text-brand-maroon text-lg uppercase tracking-wide border-b border-red-200 pb-2 mb-4">Bulk Facility Reservation Engine</h3>
+                    <p class="text-xs text-gray-500 mb-4">Select multiple courts, date ranges, and timeframes to allocate resources for tournaments, fests, or maintenance.</p>
+                    
+                    <form id="bulk-booking-form" class="space-y-4">
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                            <div>
+                                <label class="block text-xs font-bold text-gray-600 uppercase mb-1">Sport Category</label>
+                                <select id="bulk-sport" required class="w-full px-3 py-2 border border-gray-300 rounded text-sm focus:outline-none"></select>
+                            </div>
+                            <div>
+                                <label class="block text-xs font-bold text-gray-600 uppercase mb-1">Select Courts / Grounds (Ctrl/Cmd to Multi-Select)</label>
+                                <select id="bulk-courts" multiple required class="w-full px-3 py-2 border border-gray-300 rounded text-sm focus:outline-none h-20"></select>
+                            </div>
+                        </div>
+
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                            <div>
+                                <label class="block text-xs font-bold text-gray-600 uppercase mb-1">Mandatory Reason / Event Name</label>
+                                <textarea id="bulk-reason" required placeholder="e.g. Inter University Tournament, Ground Maintenance" rows="2" class="w-full px-3 py-2 border border-gray-300 rounded text-sm focus:outline-none"></textarea>
+                            </div>
+                            <div>
+                                <label class="block text-xs font-bold text-gray-600 uppercase mb-1">Apply to Specific Days</label>
+                                <div class="grid grid-cols-4 gap-2 mt-2 text-sm text-gray-700">
+                                    <label><input type="checkbox" value="Monday" class="bulk-day" checked> Mon</label>
+                                    <label><input type="checkbox" value="Tuesday" class="bulk-day" checked> Tue</label>
+                                    <label><input type="checkbox" value="Wednesday" class="bulk-day" checked> Wed</label>
+                                    <label><input type="checkbox" value="Thursday" class="bulk-day" checked> Thu</label>
+                                    <label><input type="checkbox" value="Friday" class="bulk-day" checked> Fri</label>
+                                    <label><input type="checkbox" value="Saturday" class="bulk-day" checked> Sat</label>
+                                    <label><input type="checkbox" value="Sunday" class="bulk-day" checked> Sun</label>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="grid grid-cols-1 md:grid-cols-4 gap-4 bg-gray-50 p-4 rounded border border-gray-100">
+                            <div><label class="block text-xs font-bold text-gray-600 uppercase mb-1">Start Date</label><input type="date" id="bulk-start-date" required class="w-full px-2 py-1 border rounded text-sm"></div>
+                            <div><label class="block text-xs font-bold text-gray-600 uppercase mb-1">End Date</label><input type="date" id="bulk-end-date" required class="w-full px-2 py-1 border rounded text-sm"></div>
+                            <div><label class="block text-xs font-bold text-gray-600 uppercase mb-1">Start Time</label><input type="time" id="bulk-start-time" required class="w-full px-2 py-1 border rounded text-sm"></div>
+                            <div><label class="block text-xs font-bold text-gray-600 uppercase mb-1">End Time</label><input type="time" id="bulk-end-time" required class="w-full px-2 py-1 border rounded text-sm"></div>
+                        </div>
+
+                        <div class="flex justify-between items-center pt-2">
+                            <label class="flex items-center text-xs font-bold text-gray-600">
+                                <input type="checkbox" id="bulk-skip-conflicts" class="mr-2"> Allow system to skip conflicting bookings automatically
+                            </label>
+                            <button type="submit" class="brand-maroon text-white py-2 px-6 rounded text-sm font-semibold hover:bg-opacity-90 transition-all shadow">
+                                Generate Bulk Event Reservation
+                            </button>
+                        </div>
+                    </form>
+                </div>
+
+                                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <div class="bg-white p-6 rounded-lg border border-gray-200 shadow-sm space-y-4">
+                        <h3 class="font-bold text-gray-900 text-sm uppercase tracking-wide border-b pb-2">Dynamic Infrastructure Modeler</h3>
+                        
+                        <form id="admin-sport-form" class="space-y-2">
+                            <label class="block text-xs font-semibold text-gray-600">Register New Core Sport Type</label>
+                            <div class="flex space-x-2">
+                                <input type="text" id="admin-sport-name" placeholder="e.g., Squash" required class="flex-1 px-3 py-1.5 border border-gray-300 rounded text-sm focus:outline-none focus:border-brand-maroon">
+                                <button type="submit" class="brand-maroon text-white text-xs px-4 py-1.5 rounded font-semibold">Deploy Sport</button>
+                            </div>
+                        </form>
+
+                        <hr class="my-4">
+
+                        <form id="admin-court-form" class="space-y-2">
+                            <label class="block text-xs font-semibold text-gray-600">Add New Court / Sub-Asset Segment</label>
+                            <div class="grid grid-cols-2 gap-2">
+                                <select id="admin-court-sport" required class="w-full px-3 py-1.5 border border-gray-300 rounded text-sm focus:outline-none"></select>
+                                <input type="text" id="admin-court-name" placeholder="e.g., Court 6" required class="w-full px-3 py-1.5 border border-gray-300 rounded text-sm focus:outline-none">
+                            </div>
+                            <button type="submit" class="w-full bg-gray-800 text-white text-xs py-2 rounded font-semibold mt-1">Provision Asset Allocation</button>
+                        </form>
+
+                        <hr class="my-4">
+
+                        <form id="admin-remove-court-form" class="space-y-2">
+                            <label class="block text-xs font-semibold text-gray-600">Remove Court / Sub-Asset Segment</label>
+                            <div class="grid grid-cols-2 gap-2">
+                                <select id="admin-remove-court-sport" required class="w-full px-3 py-1.5 border border-gray-300 rounded text-sm focus:outline-none">
+                                    <option value="">-- Select Sport --</option>
+                                </select>
+                                <select id="admin-remove-court-id" required class="w-full px-3 py-1.5 border border-gray-300 rounded text-sm focus:outline-none">
+                                    <option value="">-- Select Court --</option>
+                                </select>
+                            </div>
+                            <button type="submit" class="w-full bg-red-800 text-white text-xs py-2 rounded font-semibold mt-1 hover:bg-red-900 transition-colors">Delete Asset Allocation</button>
+                        </form>
+                    </div>
+
+                    <div class="bg-white p-6 rounded-lg border border-gray-200 shadow-sm space-y-4">
+                        <h3 class="font-bold text-gray-900 text-sm uppercase tracking-wide border-b pb-2">Account Management</h3>
+                        
+                        <form id="admin-user-form" class="space-y-2">
+                            <label class="block text-xs font-semibold text-gray-600">Create New Account</label>
+                            <div class="grid grid-cols-1 md:grid-cols-4 gap-2">
+                                <input type="text" id="admin-user-name" placeholder="Username" required class="px-2 py-1.5 border border-gray-300 rounded text-sm">
+                                <input type="email" id="admin-user-email" placeholder="Email ID" maxlength="150" required class="px-2 py-1.5 border border-gray-300 rounded text-sm">
+                                <input type="password" id="admin-user-pass" placeholder="Password" maxlength="130" required class="px-2 py-1.5 border border-gray-300 rounded text-sm">
+                                <select id="admin-user-role" required class="px-2 py-1.5 border border-gray-300 rounded text-sm">
+                                    <option value="helpdesk">Helpdesk</option>
+                                    <option value="admin">Admin</option>
+                                </select>
+                            </div>
+                            <button type="submit" class="w-full bg-gray-700 text-white text-xs py-2 rounded font-semibold">Create Account</button>
+                        </form>
+
+                        <hr class="my-5">
+
+                        <div class="space-y-3">
+                            <label class="block text-xs font-semibold text-gray-600">Delete Account</label>
+                            <div class="grid grid-cols-1 md:grid-cols-[1fr_auto] gap-2">
+                                <select id="admin-delete-user" class="w-full px-2 py-1.5 border border-gray-300 rounded text-sm">
+                                    <option value="">-- Select Admin / Helpdesk Account --</option>
+                                </select>
+                                <button type="button" id="admin-delete-request-btn" class="bg-red-800 text-white text-xs px-5 py-1.5 rounded font-semibold hover:bg-red-900 transition-colors">Request Delete</button>
+                            </div>
+                            <div id="admin-delete-otp-panel" class="hidden p-3 bg-red-50 border border-red-200 rounded space-y-3">
+                                <p id="admin-delete-otp-message" class="text-xs text-red-800 leading-relaxed"></p>
+                                <div class="grid grid-cols-1 md:grid-cols-[1fr_auto] gap-2 items-end">
+                                    <div>
+                                        <label class="block text-[11px] font-semibold text-gray-600 mb-1" for="admin-delete-otp">6-Digit OTP</label>
+                                        <input type="text" id="admin-delete-otp" inputmode="numeric" maxlength="6" pattern="[0-9]{6}" class="w-full px-3 py-1.5 border border-gray-300 rounded text-sm tracking-[0.3em]" placeholder="Enter OTP">
+                                    </div>
+                                    <button type="button" id="admin-delete-confirm-btn" class="bg-red-800 text-white text-xs px-5 py-1.5 rounded font-semibold hover:bg-red-900 transition-colors">Verify & Delete</button>
+                                </div>
+                                <p id="admin-delete-otp-timer" class="text-[11px] font-semibold text-brand-maroon"></p>
+                            </div>
+                        </div>
+
+                    </div>
+                </div>
+                <div class="bg-white p-6 rounded-lg border border-red-300 shadow-sm">
+                    <div class="flex flex-col md:flex-row md:items-start md:justify-between gap-4 border-b border-red-100 pb-3 mb-4"><div><h3 class="font-bold text-brand-maroon text-base uppercase tracking-wide">Student Master Database</h3><p class="text-xs text-gray-500 mt-1">Current student lookup registry for normal booking. CSV only; Enrollment Number is the unique identifier.</p></div><div class="text-xs text-gray-500">Current records: <span id="student-master-count" class="font-bold text-gray-800">—</span></div></div>
+                    <form id="student-master-import-form" class="space-y-3"><div class="grid grid-cols-1 md:grid-cols-[1fr_auto] gap-3 items-end"><div><label class="block text-xs font-semibold text-gray-600 mb-1" for="student-master-csv">CSV Upload</label><input type="file" id="student-master-csv" accept=".csv,text/csv" required class="w-full px-3 py-2 border border-gray-300 rounded text-sm bg-white"><p class="text-[11px] text-gray-400 mt-1">Required headers: Email ID, Enrollment No, Student Name. Maximum file size: 5 MB.</p></div><button type="submit" id="student-master-import-btn" class="brand-maroon text-white py-2 px-5 rounded text-xs font-semibold hover:bg-opacity-90 transition-all">Import Master Database</button></div></form>
+                    <div id="student-master-result" class="hidden mt-4 p-3 rounded border text-xs leading-relaxed"></div>
+                    <div class="mt-4 pt-4 border-t border-gray-100 flex justify-between items-center gap-3"><p class="text-[11px] text-gray-500 max-w-2xl">Purge removes only the current Student Master Database. Historical bookings, participants, reports, audit history, bulk reservations and authentication data are preserved.</p><button type="button" id="student-master-purge-btn" class="bg-red-800 text-white py-2 px-4 rounded text-xs font-semibold hover:bg-red-900 transition-colors whitespace-nowrap">Purge Student Master Database</button></div>
+                </div>
+            </section>
+        </main>
+    </div>
+
+    <!-- CANCELLATION MODAL -->
+    <div id="cancel-modal" class="hidden fixed inset-0 bg-black bg-opacity-60 flex justify-center items-center z-50">
+        <div class="bg-white p-6 rounded-lg shadow-xl border border-red-200 max-w-md w-full mx-4">
+            <h2 class="text-xl font-bold text-brand-maroon mb-2 flex items-center gap-2">
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" /></svg>
+                Confirm Cancellation
+            </h2>
+            <p class="text-sm text-gray-600 mb-4">Are you absolutely certain you wish to terminate this reservation slot? The cancellation reason will be recorded in the booking audit history.</p>
+            
+            <input type="hidden" id="cancel-booking-id">
+            
+            <label class="block text-xs font-bold text-gray-700 uppercase tracking-wide mb-1">Reason for Cancellation (Mandatory) *</label>
+            <textarea id="cancel-reason" class="w-full border border-gray-300 p-3 rounded mb-6 text-sm focus:outline-none focus:border-red-600" rows="3" placeholder="e.g., Ground Maintenance, Academic Event Override..." required></textarea>
+            
+            <div class="flex justify-end gap-3">
+                <button onclick="closeCancelModal()" class="px-4 py-2 bg-gray-200 text-gray-800 font-semibold rounded hover:bg-gray-300 transition-colors">Abort</button>
+                <button onclick="confirmCancellation()" class="px-4 py-2 brand-maroon text-white font-semibold rounded hover:bg-red-800 transition-colors shadow-sm">Confirm Cancellation</button>
+            </div>
+        </div>
+    </div>
+    
+    <!-- LOGOUT MODAL -->
+    <div id="logout-modal" class="hidden fixed inset-0 bg-black bg-opacity-60 flex justify-center items-center z-50">
+        <div class="bg-white p-6 rounded-lg shadow-xl border border-gray-200 max-w-sm w-full mx-4">
+            <h2 class="text-xl font-bold text-brand-maroon mb-2 flex items-center gap-2">Confirm Logout</h2>
+            <p class="text-sm text-gray-600 mb-6">Are you sure you want to log out?</p>
+            <div class="flex justify-end gap-3">
+                <button onclick="closeLogoutModal()" class="px-4 py-2 bg-gray-200 text-gray-800 font-semibold rounded hover:bg-gray-300 transition-colors">Cancel</button>
+                <button onclick="confirmLogout()" class="px-4 py-2 brand-maroon text-white font-semibold rounded hover:bg-opacity-90 shadow-sm transition-all">Yes, Logout</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- BOOKING RESTRICTION MODAL -->
+    <div id="blacklist-modal" class="hidden fixed inset-0 bg-black bg-opacity-60 flex justify-center items-center z-50">
+        <div class="bg-white p-6 rounded-lg shadow-xl border border-red-200 max-w-md w-full mx-4">
+
+            <!-- Step: Select sports + duration -->
+            <div id="blacklist-select-view">
+                <h2 class="text-xl font-bold text-brand-maroon mb-2 flex items-center gap-2">Impose Booking Restriction</h2>
+                <p class="text-sm text-gray-600 mb-4">Select the sports and duration this restriction should apply to, and enter the reason. The student will be emailed this exact reason.</p>
+
+                <label class="block text-xs font-bold text-gray-700 uppercase tracking-wide mb-1">Sports *</label>
+                <div id="blacklist-sport-checkboxes" class="grid grid-cols-2 gap-2 mb-4 text-sm text-gray-700 max-h-40 overflow-y-auto border border-gray-200 rounded p-3"></div>
+
+                <div class="grid grid-cols-2 gap-4 mb-4">
+                    <div>
+                        <label class="block text-xs font-bold text-gray-700 uppercase tracking-wide mb-1">Duration Value *</label>
+                        <input type="number" id="blacklist-duration-value" min="1" step="1" required class="w-full px-3 py-2 border border-gray-300 rounded text-sm focus:outline-none focus:border-red-600">
+                    </div>
+                    <div>
+                        <label class="block text-xs font-bold text-gray-700 uppercase tracking-wide mb-1">Duration Unit *</label>
+                        <select id="blacklist-duration-unit" required class="w-full px-3 py-2 border border-gray-300 rounded text-sm focus:outline-none focus:border-red-600">
+                            <option value="days">Days</option>
+                            <option value="months">Months</option>
+                            <option value="years">Years</option>
+                        </select>
+                    </div>
+                </div>
+
+                <label class="block text-xs font-bold text-gray-700 uppercase tracking-wide mb-1">Reason for Restriction *</label>
+                <textarea id="blacklist-reason" rows="2" required placeholder="Exact reason -- this will be emailed to the student verbatim" class="w-full px-3 py-2 border border-gray-300 rounded text-sm focus:outline-none focus:border-red-600 mb-4"></textarea>
+
+                <p id="blacklist-select-error" class="hidden text-xs text-red-600 font-semibold mb-3"></p>
+
+                <div class="flex justify-end gap-3">
+                    <button type="button" onclick="closeBlacklistModal()" class="px-4 py-2 bg-gray-200 text-gray-800 font-semibold rounded hover:bg-gray-300 transition-colors">Cancel</button>
+                    <button type="button" onclick="proceedToBlacklistConfirm()" class="px-4 py-2 brand-maroon text-white font-semibold rounded hover:bg-red-800 transition-colors shadow-sm">Review Restriction</button>
+                </div>
+            </div>
+
+            <!-- Step: Confirm -->
+            <div id="blacklist-confirm-view" class="hidden">
+                <h2 class="text-xl font-bold text-brand-maroon mb-2 flex items-center gap-2">Confirm Booking Restriction</h2>
+                <div class="text-sm text-gray-700 space-y-2 mb-6 bg-gray-50 border border-gray-200 rounded p-4">
+                    <div><span class="font-bold text-gray-500 uppercase text-[11px] tracking-wide block">Student</span><span id="blacklist-confirm-name"></span></div>
+                    <div><span class="font-bold text-gray-500 uppercase text-[11px] tracking-wide block">Enrollment Number</span><span id="blacklist-confirm-roll"></span></div>
+                    <div><span class="font-bold text-gray-500 uppercase text-[11px] tracking-wide block">Sports</span><span id="blacklist-confirm-sports"></span></div>
+                    <div><span class="font-bold text-gray-500 uppercase text-[11px] tracking-wide block">Duration</span><span id="blacklist-confirm-duration"></span></div>
+                    <div><span class="font-bold text-gray-500 uppercase text-[11px] tracking-wide block">Reason</span><span id="blacklist-confirm-reason"></span></div>
+                    <div><span class="font-bold text-gray-500 uppercase text-[11px] tracking-wide block">Start</span><span id="blacklist-confirm-start"></span></div>
+                    <div><span class="font-bold text-gray-500 uppercase text-[11px] tracking-wide block">Expires</span><span id="blacklist-confirm-expiry"></span></div>
+                </div>
+                <div class="flex justify-end gap-3">
+                    <button type="button" onclick="backToBlacklistSelect()" class="px-4 py-2 bg-gray-200 text-gray-800 font-semibold rounded hover:bg-gray-300 transition-colors">Cancel</button>
+                    <button type="button" onclick="submitBlacklist()" class="px-4 py-2 brand-maroon text-white font-semibold rounded hover:bg-red-800 transition-colors shadow-sm">Confirm Restriction</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- REMOVE BOOKING RESTRICTION MODAL -->
+
+    <div id="blacklist-remove-modal" class="hidden fixed inset-0 bg-black bg-opacity-60 flex justify-center items-center z-50">
+        <div class="bg-white p-6 rounded-lg shadow-xl border border-gray-200 max-w-sm w-full mx-4">
+            <h2 class="text-xl font-bold text-brand-maroon mb-2 flex items-center gap-2">Remove Booking Restriction</h2>
+            <p class="text-sm text-gray-600 mb-2">Are you sure you want to remove the restriction for:</p>
+            <ul id="blacklist-remove-sport-list" class="text-sm font-bold text-gray-900 list-disc pl-5 mb-6"></ul>
+            <div class="flex justify-end gap-3">
+                <button type="button" onclick="closeRemoveBlacklistModal()" class="px-4 py-2 bg-gray-200 text-gray-800 font-semibold rounded hover:bg-gray-300 transition-colors">Cancel</button>
+                <button type="button" onclick="confirmRemoveBlacklist()" class="px-4 py-2 bg-gray-800 text-white font-semibold rounded hover:bg-gray-900 transition-colors shadow-sm">Remove Restriction</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let currentSessionUser = null;
+        let authToken = null;
+        let internalSportsLayoutCache = [];
+        let dashboardAlertTimeout = null;
+        let currentSearchedStudent = null;
+        let currentActiveRestrictions = [];
+        let activeReservationsRefreshTimer = null;
+
+        // Wraps the native authFetch() so every request automatically carries the
+        // logged-in user's session token. If the server says the session is
+        // no longer valid (expired / server restarted), the user is dropped
+        // back to the login screen instead of the app silently failing.
+        async function authFetch(url, options = {}) {
+            const headers = Object.assign({}, options.headers || {}, authToken ? { 'x-auth-token': authToken } : {});
+            const res = await fetch(url, Object.assign({}, options, { headers }));
+            if (res.status === 401) {
+                currentSessionUser = null;
+                authToken = null;
+                document.getElementById('app-view').classList.add('hidden');
+                document.getElementById('login-view').classList.remove('hidden');
+                const errorDiv = document.getElementById('login-error');
+                errorDiv.innerText = 'Your session has expired. Please log in again.';
+                errorDiv.classList.remove('hidden');
+                if (activeReservationsRefreshTimer) {
+                    clearInterval(activeReservationsRefreshTimer);
+                    activeReservationsRefreshTimer = null;
+                }
+            }
+            return res;
+        }
+
+        // Escapes text before it is inserted into innerHTML, so a student name,
+        // booking reason, student details, etc. containing characters like <, >,
+        // or " can never be interpreted as HTML/JS by the browser.
+        function escapeHtml(value) {
+            if (value === null || value === undefined) return '';
+            return String(value)
+                .replace(/&/g, '&amp;')
+                .replace(/</g, '&lt;')
+                .replace(/>/g, '&gt;')
+                .replace(/"/g, '&quot;')
+                .replace(/'/g, '&#39;');
+        }
+
+        // Same Email ID shortcut as the backend.
+        function normalizeUniversityEmail(value) {
+            const cleaned = typeof value === 'string' ? value.trim() : '';
+            if (!cleaned) return '';
+            if (cleaned.includes('@')) return cleaned;
+            if (!/^[A-Za-z0-9][A-Za-z0-9._+-]{0,149}$/.test(cleaned)) return cleaned;
+            return cleaned + '@ahduni.edu.in';
+        }
+
+        function bookingPlayersToggle(booking) {
+            if (booking.booking_type === 'bulk' || !booking.id) return '';
+            const additionalCount = Number.isInteger(Number(booking.additional_player_count)) ? Number(booking.additional_player_count) : (booking.additional_players ? booking.additional_players.split(', ').filter(Boolean).length : 0);
+            const total = additionalCount + 1;
+            return `<div class="mt-2"><span class="text-[10px] text-gray-500 font-bold mr-2">Players: ${total}</span><button type="button" onclick="window.toggleBookingPlayers(${Number(booking.id)}, this)" class="text-[10px] font-bold text-brand-maroon hover:text-red-900 underline">▼ ${total === 1 ? 'View Player' : 'View Players'}</button><div class="hidden mt-2" data-booking-players-panel></div></div>`;
+        }
+
+        window.toggleBookingPlayers = async function(bookingId, button) {
+            // The same booking is shown in several tabs. Keeping the panel next
+            // to its own button avoids duplicate DOM IDs and makes each view's
+            // expand/collapse control independent.
+            const container = button ? button.nextElementSibling : null;
+            if (!container) return;
+            if (container.dataset.loaded === 'true') { container.classList.toggle('hidden'); return; }
+            container.classList.remove('hidden');
+            container.innerHTML = '<div class="text-[10px] text-gray-400">Loading players...</div>';
+            try {
+                const res = await authFetch(`/api/bookings/${bookingId}/players`);
+                const data = await res.json();
+                if (!res.ok) throw new Error(data.error || 'Unable to load players.');
+                const playerLine = (p, role) => `<div class="text-[11px] text-gray-700"><span class="font-bold">${escapeHtml(p.name)}</span> · Enrollment: ${escapeHtml(p.roll_number)} · Email: ${escapeHtml(p.email || 'Not Available')} <span class="text-gray-400">(${role})</span></div>`;
+                let html = `<div class="p-2 bg-gray-50 border border-gray-200 rounded space-y-1"><div class="text-[10px] uppercase font-bold text-brand-maroon">Primary Player / Booker</div>${playerLine(data.primary, 'Primary Player')}`;
+                if (data.additional_players.length) html += '<div class="pt-1 mt-1 border-t border-gray-200 text-[10px] uppercase font-bold text-gray-500">Additional Players</div>' + data.additional_players.map(p => playerLine(p, 'Additional Player')).join('');
+                container.innerHTML = html + '</div>';
+                container.dataset.loaded = 'true';
+            } catch (err) { container.innerHTML = `<div class="text-[10px] text-red-600">${escapeHtml(err.message)}</div>`; }
+        };
+
+        // Global functions for handling Bulk Event Cards interactions
+        window.toggleBulkDetails = function(id) {
+            const el = document.getElementById(`bulk-details-${id}`);
+            if (el) el.classList.toggle('hidden');
+        };
+
+        window.computeBulkStats = function(slots) {
+            let minDate = slots[0].booking_date;
+            let maxDate = slots[0].booking_date;
+            let courts = new Set();
+            let weekdays = new Set();
+
+            slots.forEach(s => {
+                if (s.booking_date < minDate) minDate = s.booking_date;
+                if (s.booking_date > maxDate) maxDate = s.booking_date;
+                if (s.court_name) courts.add(s.court_name);
+
+                let parts = s.booking_date.split('-');
+                let d = new Date(parts[0], parts[1]-1, parts[2]);
+                let days = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
+                weekdays.add(days[d.getDay()]);
+            });
+
+            let createdStr = slots[0].created_at || '';
+            let cDateIST = 'Unknown';
+            let cTimeIST = 'Unknown';
+            if (createdStr) {
+                try {
+                    let d = new Date(createdStr + (!createdStr.endsWith('Z') ? 'Z' : ''));
+                    cDateIST = d.toLocaleDateString("en-IN", {timeZone: "Asia/Kolkata"});
+                    cTimeIST = d.toLocaleTimeString("en-IN", {timeZone: "Asia/Kolkata", hour: '2-digit', minute:'2-digit'});
+                } catch(e) {}
+            }
+
+            return {
+                reason: escapeHtml(slots[0].reason || 'University Event'),
+                sport: escapeHtml(slots[0].sport_name || 'Multiple Assets'),
+                courtCount: courts.size,
+                dateRange: minDate === maxDate ? minDate : `${minDate} to ${maxDate}`,
+                startTime: slots[0].start_time,
+                endTime: slots[0].end_time,
+                weekdays: Array.from(weekdays).join(', '),
+                totalSlots: slots.length,
+                adminName: escapeHtml(slots[0].admin_name || 'Admin'),
+                createdDate: cDateIST,
+                createdTime: cTimeIST
+            };
+        };
+
+        window.buildActiveBulkCard = function(groupId, slots, stats) {
+            let detailsHtml = slots.map(row => {
+                let actionBtn = `<button onclick="executeImmediateCancellation(${row.id})" class="text-[10px] font-bold text-red-600 hover:text-red-900 hover:bg-red-50 border border-red-200 px-2 py-1 rounded">Terminate Entry</button>`;
+                if (currentSessionUser && currentSessionUser.role !== 'admin') {
+                    actionBtn = `<span class="text-[10px] font-bold text-gray-400 uppercase">Admin Lock</span>`;
+                }
+                return `
+                    <tr class="border-b border-gray-100 hover:bg-gray-50 text-xs">
+                        <td class="px-4 py-3 font-semibold text-gray-700">${escapeHtml(row.court_name) || 'Court'}</td>
+                        <td class="px-4 py-3">${escapeHtml(row.booking_date)}</td>
+                        <td class="px-4 py-3">${escapeHtml(row.start_time)}</td>
+                        <td class="px-4 py-3">${escapeHtml(row.end_time)}</td>
+                        <td class="px-4 py-3"><span class="px-2 py-0.5 rounded text-[10px] uppercase tracking-wider bg-green-100 text-green-800 font-bold">${escapeHtml(row.status)}</span></td>
+                        <td class="px-4 py-3 text-right">${actionBtn}</td>
+                    </tr>
+                `;
+            }).join('');
+
+            let cancelAllBtn = '';
+            if (currentSessionUser && currentSessionUser.role === 'admin') {
+                cancelAllBtn = `<button onclick="cancelBulkEvent('${groupId}')" class="px-3 py-1.5 bg-red-800 text-white border border-red-900 text-xs font-bold rounded hover:bg-red-950 transition-colors whitespace-nowrap shadow-sm">Cancel Entire Event</button>`;
+            }
+
+            return `
+                <div class="bg-white rounded-lg border border-red-200 shadow-sm overflow-hidden mb-4">
+                    <div class="p-5 border-b border-gray-200 bg-red-50 bg-opacity-30 flex flex-col md:flex-row md:justify-between md:items-start gap-4">
+                        <div class="flex-1">
+                            <h3 class="text-base font-bold text-brand-maroon uppercase tracking-wide flex items-center gap-2">
+                                <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm1-12a1 1 0 10-2 0v4a1 1 0 00.293.707l2.828 2.829a1 1 0 101.415-1.415L11 9.586V6z" clip-rule="evenodd" /></svg>
+                                ${stats.reason}
+                            </h3>
+                            <div class="mt-3 grid grid-cols-2 md:grid-cols-4 gap-x-4 gap-y-3 text-xs text-gray-700">
+                                <div><span class="font-bold text-gray-400 uppercase block text-[10px] tracking-wider mb-0.5">Sport</span><span class="font-bold text-gray-800">${stats.sport}</span></div>
+                                <div><span class="font-bold text-gray-400 uppercase block text-[10px] tracking-wider mb-0.5">Reserved Courts</span><span class="font-bold text-gray-800">${stats.courtCount}</span></div>
+                                <div><span class="font-bold text-gray-400 uppercase block text-[10px] tracking-wider mb-0.5">Date Range</span><span class="font-bold text-gray-800">${stats.dateRange}</span></div>
+                                <div><span class="font-bold text-gray-400 uppercase block text-[10px] tracking-wider mb-0.5">Timing</span><span class="font-bold text-gray-800">${stats.startTime} - ${stats.endTime}</span></div>
+                                <div><span class="font-bold text-gray-400 uppercase block text-[10px] tracking-wider mb-0.5">Weekdays</span><span class="font-bold text-gray-800">${stats.weekdays}</span></div>
+                                <div><span class="font-bold text-gray-400 uppercase block text-[10px] tracking-wider mb-0.5">Total Slots</span><span class="font-bold text-gray-800">${stats.totalSlots}</span></div>
+                                <div><span class="font-bold text-gray-400 uppercase block text-[10px] tracking-wider mb-0.5">Created By</span><span class="font-bold text-gray-800">${stats.adminName}</span></div>
+                                <div><span class="font-bold text-gray-400 uppercase block text-[10px] tracking-wider mb-0.5">Creation (IST)</span><span class="font-bold text-gray-800">${stats.createdDate} at ${stats.createdTime}</span></div>
+                            </div>
+                        </div>
+                        <div class="flex flex-col gap-2 min-w-fit">
+                            <button onclick="toggleBulkDetails('${groupId}')" class="px-3 py-1.5 bg-white border border-brand-maroon text-brand-maroon text-xs font-bold rounded hover:bg-red-50 transition-colors whitespace-nowrap shadow-sm">View Reserved Slots</button>
+                            ${cancelAllBtn}
+                        </div>
+                    </div>
+                    <div id="bulk-details-${groupId}" class="hidden overflow-x-auto bg-white border-t border-gray-100">
+                        <table class="w-full text-left text-sm text-gray-500">
+                            <thead class="bg-gray-100 text-[10px] font-bold uppercase text-gray-700 tracking-wider">
+                                <tr>
+                                    <th class="px-4 py-3">Court Number</th>
+                                    <th class="px-4 py-3">Date</th>
+                                    <th class="px-4 py-3">Start Time</th>
+                                    <th class="px-4 py-3">End Time</th>
+                                    <th class="px-4 py-3">Status</th>
+                                    <th class="px-4 py-3 text-right">Action</th>
+                                </tr>
+                            </thead>
+                            <tbody>${detailsHtml}</tbody>
+                        </table>
+                    </div>
+                </div>
+            `;
+        };
+
+        // Ensures the login username field is never pre-filled, even if the browser
+        // ignores autocomplete="off" and tries to restore a previously typed value.
+        function clearLoginUsernameField() {
+            const usernameField = document.getElementById('login-username');
+            if (usernameField) usernameField.value = '';
+        }
+
+        function enhancePasswordField(input){if(!input||input.dataset.passwordEnhanced==='true')return;input.dataset.passwordEnhanced='true';const wrapper=document.createElement('div');wrapper.className='relative';input.parentNode.insertBefore(wrapper,input);wrapper.appendChild(input);input.classList.add('pr-10');const button=document.createElement('button');button.type='button';button.className='absolute right-2 top-1/2 -translate-y-1/2 inline-flex items-center justify-center h-7 w-7 rounded text-gray-400 hover:text-gray-700 hover:bg-gray-100 focus:outline-none focus:ring-2 focus:ring-red-200 transition-colors';button.setAttribute('aria-label','Show password');button.setAttribute('title','Show password');const renderIcon=visible=>{button.innerHTML=visible?'<svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M2.5 12s3.5-6 9.5-6 9.5 6 9.5 6-3.5 6-9.5 6-9.5-6-9.5-6Z"></path><circle cx="12" cy="12" r="2.5"></circle></svg>':'<svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="m3 3 18 18"></path><path d="M10.6 5.1A10.9 10.9 0 0 1 12 5c6 0 9.5 7 9.5 7a17.2 17.2 0 0 1-3.1 3.7M6.2 6.3C3.9 7.8 2.5 12 2.5 12s3.5 7 9.5 7c1.5 0 2.8-.4 4-1"></path><path d="M9.9 9.9a3 3 0 0 0 4.2 4.2"></path></svg>';};renderIcon(false);button.addEventListener('click',()=>{const visible=input.type==='password';input.type=visible?'text':'password';button.setAttribute('aria-label',visible?'Hide password':'Show password');button.setAttribute('title',visible?'Hide password':'Show password');renderIcon(visible);});wrapper.appendChild(button);}
+        function setupPasswordEyeIcons(){document.querySelectorAll('input[type="password"]').forEach(enhancePasswordField);}
+        async function loadStudentMasterStatus(){const countEl=document.getElementById('student-master-count');if(!countEl||!currentSessionUser||currentSessionUser.role!=='admin')return;try{const res=await authFetch('/api/admin/student-master/status');if(!res.ok)return;const data=await res.json();countEl.innerText=Number(data.count||0).toLocaleString();}catch(_){} }
+        function showStudentMasterResult(message,isError=false){const box=document.getElementById('student-master-result');if(!box)return;box.innerText=message||'';box.className=`mt-4 p-3 rounded border text-xs leading-relaxed ${isError?'bg-red-50 text-red-700 border-red-200':'bg-gray-50 text-gray-700 border-gray-200'}`;if(!message)box.classList.add('hidden');else box.classList.remove('hidden');}
+        function formatMasterImportSummary(summary){const lines=[`Total rows: ${summary.total_rows}`,`Successfully processed: ${summary.successfully_imported}`,`Newly added: ${summary.newly_added}`,`Existing records detected: ${summary.existing_records_detected}`,`Updated: ${summary.updated}`,`Duplicate rows: ${summary.duplicate_rows}`,`Invalid rows: ${summary.invalid_rows}`,`Missing fields: ${summary.missing_fields}`,`Invalid email addresses: ${summary.invalid_email_addresses}`];if(Array.isArray(summary.errors)&&summary.errors.length)lines.push('Error details: '+summary.errors.map(item=>`Row ${item.row}: ${item.errors.join(' ')}`).join(' | '));return lines.join('\n');}
+        function setupStudentMasterAdminEngine(){const form=document.getElementById('student-master-import-form'),purgeBtn=document.getElementById('student-master-purge-btn');if(!form||!purgeBtn)return;form.addEventListener('submit',async e=>{e.preventDefault();const file=document.getElementById('student-master-csv').files[0];if(!file)return showStudentMasterResult('Please choose a CSV file.',true);if(!/\.csv$/i.test(file.name))return showStudentMasterResult('Please choose a CSV file.',true);if(file.size>5*1024*1024)return showStudentMasterResult('CSV file is too large. Maximum supported size is 5 MB.',true);const button=document.getElementById('student-master-import-btn');button.disabled=true;button.classList.add('opacity-70','cursor-not-allowed');button.innerText='Importing...';try{const content=await file.text(),res=await authFetch('/api/admin/student-master/import-csv',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({filename:file.name,content})}),data=await res.json();if(!res.ok)throw new Error(data.error||'Student Master Database import failed.');showStudentMasterResult(formatMasterImportSummary(data.summary),false);form.reset();await loadStudentMasterStatus();}catch(err){showStudentMasterResult(err.message,true);}finally{button.disabled=false;button.classList.remove('opacity-70','cursor-not-allowed');button.innerText='Import Master Database';}});purgeBtn.addEventListener('click',async()=>{if(!confirm('Are you sure you want to purge the Student Master Database?\n\nThis removes the current student lookup records only. Historical bookings, activity, reports, audit history, bulk reservations, participant records and authentication data will NOT be deleted. New normal student bookings will remain blocked until a new CSV is imported.'))return;try{const res=await authFetch('/api/admin/student-master/purge',{method:'DELETE',headers:{'Content-Type':'application/json'},body:JSON.stringify({confirmation:'PURGE STUDENT MASTER DATABASE'})}),data=await res.json();if(!res.ok)throw new Error(data.error||'Student Master Database purge failed.');showStudentMasterResult(data.message||`Purged ${data.removed_count||0} record(s).`,false);await loadStudentMasterStatus();}catch(err){showStudentMasterResult(err.message,true);}});}
+
+        document.addEventListener('DOMContentLoaded', () => {
+            setupFormInterceptors();
+            setupSmartStudentSearchEngine();
+            setupForgotPasswordFormEngine();
+            setupStudentMasterAdminEngine();
+            setupPasswordEyeIcons();
+            setupStudentHistorySearchEngine();
+            setupStudentEditFormEngine();
+            document.getElementById('additional-player-count').addEventListener('change', renderAdditionalPlayerFields);
+            renderAdditionalPlayerFields();
+            clearLoginUsernameField();
+        });
+
+        // 'pageshow' also fires when a page is restored from browser back/forward cache,
+        // which is another common way a browser can silently re-populate a text field.
+        window.addEventListener('pageshow', clearLoginUsernameField);
+
+        // Clears the currently entered/selected student and booking fields on the
+        // New Booking dashboard so the administrator can start with a fresh student.
+        // This ONLY resets frontend form state - it never deletes, cancels, or
+        // modifies any existing booking or student record in the database.
+        function clearDashboardState() {
+            document.getElementById('booking-form').reset();
+            document.getElementById('additional-player-count').value = '0';
+            renderAdditionalPlayerFields();
+
+            const rF = document.getElementById('book-roll');
+            const nF = document.getElementById('book-name');
+            const eF = document.getElementById('book-email');
+
+            rF.value = ''; nF.value = ''; eF.value = '';
+
+            nF.setAttribute('disabled', 'true'); nF.classList.add('bg-gray-100');
+            eF.setAttribute('disabled', 'true'); eF.classList.add('bg-gray-100');
+
+            document.getElementById('book-court-msg').classList.add('hidden');
+
+            document.getElementById('dashboard-alert').classList.add('hidden');
+            if (dashboardAlertTimeout) clearTimeout(dashboardAlertTimeout);
+
+            rF.focus();
+        }
+
+        function showDashboardAlert(message, isError = true) {
+            const alertDiv = document.getElementById('dashboard-alert');
+            alertDiv.className = `mb-6 p-4 rounded-lg text-sm font-bold shadow-sm transition-all border ${isError ? 'bg-red-50 text-red-800 border-red-300' : 'bg-green-50 text-green-800 border-green-300'}`;
+            alertDiv.innerText = message;
+            alertDiv.classList.remove('hidden');
+            
+            if (dashboardAlertTimeout) clearTimeout(dashboardAlertTimeout);
+            dashboardAlertTimeout = setTimeout(() => { alertDiv.classList.add('hidden'); }, 8000);
+        }
+
+        function showBulkBookingAlert(data) {
+            const alertDiv = document.getElementById('dashboard-alert');
+            
+            const hasFailures = data.failed && data.failed.length > 0;
+            const hasSuccess = data.successful && data.successful.length > 0;
+            
+            let bgClass = 'bg-green-50 text-green-800 border-green-300';
+            if (hasFailures && !hasSuccess) bgClass = 'bg-red-50 text-red-800 border-red-300';
+            else if (hasFailures && hasSuccess) bgClass = 'bg-yellow-50 text-yellow-800 border-yellow-300';
+
+            alertDiv.className = `mb-6 p-4 rounded-lg text-sm shadow-sm transition-all border ${bgClass}`;
+            
+            let html = `<div class="space-y-3">
+                <h4 class="font-bold text-base border-b border-current pb-1">Bulk Booking Execution Results</h4>`;
+                
+            if (data.message) {
+                html += `<p class="font-semibold">${data.message}</p>`;
+            }
+            
+            if (hasSuccess) {
+                html += `<div>
+                    <strong class="block mb-1 text-green-700">Successfully Booked (${data.successful.length}):</strong>
+                    <ul class="list-disc pl-5 text-xs space-y-1 font-medium text-gray-800">`;
+                data.successful.slice(0, 15).forEach(s => {
+                    html += `<li>Date: ${s.date || s.booking_date} | Time: ${s.start_time} - ${s.end_time} | Asset: ${s.sport_name || 'Sport'} - ${s.court_name || 'Court'}</li>`;
+                });
+                if (data.successful.length > 15) html += `<li>...and ${data.successful.length - 15} more successfully booked slots.</li>`;
+                html += `</ul></div>`;
+            }
+            
+            if (hasFailures) {
+                html += `<div>
+                    <strong class="block mb-1 text-red-700">Failed Bookings / Clashes (${data.failed.length}):</strong>
+                    <ul class="list-disc pl-5 text-xs space-y-2 font-medium text-gray-800">`;
+                data.failed.forEach(f => {
+                    let detailStr = `Date: ${escapeHtml(f.date || f.booking_date)} | Time: ${escapeHtml(f.start_time)} - ${escapeHtml(f.end_time)} | Asset: ${escapeHtml(f.sport_name || 'Sport')} - ${escapeHtml(f.court_name || 'Court')}`;
+                    if (f.student_name) detailStr += ` | Student: ${escapeHtml(f.student_name)}`;
+                    if (f.student_id || f.roll_number) detailStr += ` | ID: ${escapeHtml(f.student_id || f.roll_number)}`;
+                    
+                    html += `<li>${detailStr} <br/><span class="font-bold text-red-600 mt-0.5 inline-block">Reason: ${escapeHtml(f.reason || 'Booking Conflict / Slot Already Booked')}</span></li>`;
+                });
+                html += `</ul></div>`;
+            }
+            
+            html += `</div>`;
+            
+            alertDiv.innerHTML = html;
+            alertDiv.classList.remove('hidden');
+            
+            if (dashboardAlertTimeout) clearTimeout(dashboardAlertTimeout);
+            dashboardAlertTimeout = setTimeout(() => { alertDiv.classList.add('hidden'); }, 15000); 
+        }
+        function showForgotMessage(message, isError = false) {
+            const box = document.getElementById('forgot-message');
+            if (!box) return;
+            box.innerText = message || '';
+            box.className = `p-3 rounded text-xs leading-relaxed border ${isError ? 'bg-red-50 text-red-700 border-red-200' : 'bg-gray-50 text-gray-700 border-gray-200'}`;
+            if (!message) box.classList.add('hidden');
+            else box.classList.remove('hidden');
+        }
+
+        let forgotOtpTimerInterval = null;
+        let forgotResendTimerInterval = null;
+        let forgotOtpExpiresAt = 0;
+        let forgotResendAvailableAt = 0;
+
+        function formatCountdown(ms) {
+            const totalSeconds = Math.max(0, Math.ceil(ms / 1000));
+            const minutes = Math.floor(totalSeconds / 60);
+            const seconds = totalSeconds % 60;
+            return `${String(minutes).padStart(2, '0')}:${String(seconds).padStart(2, '0')}`;
+        }
+
+        function clearForgotTimers() {
+            if (forgotOtpTimerInterval) clearInterval(forgotOtpTimerInterval);
+            if (forgotResendTimerInterval) clearInterval(forgotResendTimerInterval);
+            forgotOtpTimerInterval = null;
+            forgotResendTimerInterval = null;
+        }
+
+        function updateForgotOtpTimer() {
+            const timer = document.getElementById('forgot-otp-timer');
+            const verifyBtn = document.getElementById('forgot-reset-btn');
+            if (!timer) return;
+
+            const remaining = forgotOtpExpiresAt - Date.now();
+            if (remaining <= 0) {
+                timer.innerText = 'OTP expired';
+                timer.classList.remove('text-brand-maroon');
+                timer.classList.add('text-red-600');
+                if (verifyBtn) {
+                    verifyBtn.disabled = true;
+                    verifyBtn.classList.add('opacity-60', 'cursor-not-allowed');
+                }
+                if (forgotOtpTimerInterval) {
+                    clearInterval(forgotOtpTimerInterval);
+                    forgotOtpTimerInterval = null;
+                }
+                return;
+            }
+
+            timer.innerText = `OTP expires in ${formatCountdown(remaining)}`;
+            timer.classList.add('text-brand-maroon');
+            timer.classList.remove('text-red-600');
+            if (verifyBtn) {
+                verifyBtn.disabled = false;
+                verifyBtn.classList.remove('opacity-60', 'cursor-not-allowed');
+            }
+        }
+
+        function updateForgotResendTimer() {
+            const timer = document.getElementById('forgot-resend-timer');
+            const resendBtn = document.getElementById('forgot-resend-btn');
+            if (!timer || !resendBtn) return;
+
+            const remaining = forgotResendAvailableAt - Date.now();
+            if (remaining <= 0) {
+                timer.innerText = '';
+                resendBtn.disabled = false;
+                resendBtn.classList.remove('text-gray-400', 'cursor-not-allowed');
+                resendBtn.classList.add('text-gray-600', 'hover:bg-gray-50');
+                if (forgotResendTimerInterval) {
+                    clearInterval(forgotResendTimerInterval);
+                    forgotResendTimerInterval = null;
+                }
+                return;
+            }
+
+            timer.innerText = `Resend available in ${formatCountdown(remaining)}`;
+            resendBtn.disabled = true;
+            resendBtn.classList.add('text-gray-400', 'cursor-not-allowed');
+            resendBtn.classList.remove('text-gray-600', 'hover:bg-gray-50');
+        }
+
+        function startForgotTimers(expiresAt, resendAt) {
+            clearForgotTimers();
+            forgotOtpExpiresAt = new Date(expiresAt).getTime();
+            forgotResendAvailableAt = new Date(resendAt).getTime();
+
+            updateForgotOtpTimer();
+            updateForgotResendTimer();
+
+            forgotOtpTimerInterval = setInterval(updateForgotOtpTimer, 250);
+            forgotResendTimerInterval = setInterval(updateForgotResendTimer, 250);
+        }
+
+        function toggleForgotPasswordView(show) {
+            clearForgotTimers();
+            document.getElementById('login-error').classList.add('hidden');
+
+            if (show) {
+                document.getElementById('login-form').classList.add('hidden');
+                document.getElementById('forgot-form').classList.remove('hidden');
+                document.getElementById('forgot-username-form').classList.remove('hidden');
+                document.getElementById('forgot-reset-form').classList.add('hidden');
+                document.getElementById('forgot-reset-token').value = '';
+                document.getElementById('login-title').innerText = 'Reset Access Account';
+                document.getElementById('login-desc').innerText = 'Receive a secure one-time password at your registered email';
+                showForgotMessage('');
+                document.getElementById('forgot-username').focus();
+            } else {
+                document.getElementById('login-form').classList.remove('hidden');
+                document.getElementById('forgot-form').classList.add('hidden');
+                document.getElementById('login-title').innerText = 'Sports Facility Portal';
+                document.getElementById('login-desc').innerText = 'Sign in with authorized university credentials';
+                showForgotMessage('');
+                document.getElementById('forgot-username-form').reset();
+                document.getElementById('forgot-reset-form').reset();
+                document.getElementById('forgot-reset-token').value = '';
+                document.getElementById('forgot-resend-btn').disabled = true;
+            }
+        }
+
+        function setupForgotPasswordFormEngine() {
+            const usernameForm = document.getElementById('forgot-username-form');
+            const resetForm = document.getElementById('forgot-reset-form');
+            const resendBtn = document.getElementById('forgot-resend-btn');
+            const sendBtn = document.getElementById('forgot-send-btn');
+            const resetBtn = document.getElementById('forgot-reset-btn');
+            if (!usernameForm || !resetForm) return;
+
+            const requestOtp = async () => {
+                const username = document.getElementById('forgot-username').value.trim();
+                if (!username) {
+                    showForgotMessage('Please enter your username.', true);
+                    return;
+                }
+
+                sendBtn.disabled = true;
+                sendBtn.classList.add('opacity-70', 'cursor-not-allowed');
+
+                try {
+                    const res = await fetch('/api/auth/forgot-password', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ username })
+                    });
+                    const data = await res.json();
+                    if (!res.ok) throw new Error(data.error || 'Unable to request a password reset.');
+
+                    showForgotMessage(data.message || 'If the account exists, a password reset OTP has been sent to its registered email address.');
+                    usernameForm.classList.add('hidden');
+                    resetForm.classList.remove('hidden');
+                    document.getElementById('forgot-otp').value = '';
+                    document.getElementById('forgot-new-password').value = '';
+                    document.getElementById('forgot-confirm-password').value = '';
+                    startForgotTimers(
+                        data.otp_expires_at || new Date(Date.now() + 2 * 60 * 1000).toISOString(),
+                        data.resend_available_at || new Date(Date.now() + 60 * 1000).toISOString()
+                    );
+                    document.getElementById('forgot-otp').focus();
+                } catch (err) {
+                    showForgotMessage(err.message, true);
+                } finally {
+                    sendBtn.disabled = false;
+                    sendBtn.classList.remove('opacity-70', 'cursor-not-allowed');
+                }
+            };
+
+            usernameForm.addEventListener('submit', async e => {
+                e.preventDefault();
+                await requestOtp();
+            });
+
+            resendBtn.addEventListener('click', async () => {
+                if (resendBtn.disabled) return;
+                await requestOtp();
+            });
+
+            resetForm.addEventListener('submit', async e => {
+                e.preventDefault();
+
+                if (Date.now() >= forgotOtpExpiresAt) {
+                    updateForgotOtpTimer();
+                    showForgotMessage('OTP expired. Please request a new OTP.', true);
+                    return;
+                }
+
+                const username = document.getElementById('forgot-username').value.trim();
+                const otp = document.getElementById('forgot-otp').value.trim();
+                const newPassword = document.getElementById('forgot-new-password').value;
+                const confirmPassword = document.getElementById('forgot-confirm-password').value;
+
+                if (!/^\d{6}$/.test(otp)) return showForgotMessage('Enter the 6-digit OTP.', true);
+                if (newPassword.length < 8) return showForgotMessage('New password must be at least 8 characters.', true);
+                if (newPassword !== confirmPassword) return showForgotMessage('New password and confirmation password do not match.', true);
+
+                resetBtn.disabled = true;
+                resetBtn.classList.add('opacity-70', 'cursor-not-allowed');
+
+                try {
+                    const verifyRes = await fetch('/api/auth/verify-reset-otp', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ username, otp })
+                    });
+                    const verifyData = await verifyRes.json();
+                    if (!verifyRes.ok) throw new Error(verifyData.error || 'OTP verification failed.');
+
+                    const resetRes = await fetch('/api/auth/reset-password', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({
+                            reset_token: verifyData.reset_token,
+                            new_password: newPassword,
+                            confirm_password: confirmPassword
+                        })
+                    });
+                    const resetData = await resetRes.json();
+                    if (!resetRes.ok) throw new Error(resetData.error || 'Password reset failed.');
+
+                    clearForgotTimers();
+                    showForgotMessage(resetData.message || 'Password reset successfully. You can now sign in.');
+                    resetForm.reset();
+                    setTimeout(() => toggleForgotPasswordView(false), 900);
+                } catch (err) {
+                    showForgotMessage(err.message, true);
+                } finally {
+                    resetBtn.disabled = false;
+                    resetBtn.classList.remove('opacity-70', 'cursor-not-allowed');
+                }
+            });
+        }
+
+        document.getElementById('login-form').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            try {
+                const res = await fetch('/api/auth/login', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ username: document.getElementById('login-username').value, password: document.getElementById('login-password').value })
+                });
+                const data = await res.json();
+                if (!res.ok) throw new Error(data.error || 'Server authentication error.');
+                currentSessionUser = data;
+                authToken = data.token;
+                initializeDashboardWorkspace();
+            } catch (err) {
+                const errorDiv = document.getElementById('login-error');
+                errorDiv.innerText = err.message;
+                errorDiv.classList.remove('hidden');
+            }
+        });
+
+        function initializeDashboardWorkspace() {
+            document.getElementById('login-view').classList.add('hidden');
+            document.getElementById('app-view').classList.remove('hidden');
+            
+            document.getElementById('user-badge-name').innerText = `Logged in as: ${currentSessionUser.username}`;
+            document.getElementById('user-badge-role').innerText = `Role: ${currentSessionUser.role.charAt(0).toUpperCase() + currentSessionUser.role.slice(1)}`;
+            document.getElementById('user-badge-email').innerText = currentSessionUser.email ? `Email: ${currentSessionUser.email}` : 'Email: Not Available';
+            loadStudentMasterStatus();
+            
+            if (currentSessionUser.role === 'admin') {
+                document.getElementById('btn-admin-tab').classList.remove('hidden');
+                if (typeof window.loadAdminAccounts === 'function') window.loadAdminAccounts();
+            } else {
+                document.getElementById('btn-admin-tab').classList.add('hidden');
+            }
+            refreshSportsLayoutMappingOptions();
+            switchTab('booking-tab');
+        }
+
+        function requestLogout() {
+            document.getElementById('logout-modal').classList.remove('hidden');
+        }
+
+        function closeLogoutModal() {
+            document.getElementById('logout-modal').classList.add('hidden');
+        }
+
+        function confirmLogout() {
+            closeLogoutModal();
+            if (authToken) {
+                fetch('/api/auth/logout', { method: 'POST', headers: { 'x-auth-token': authToken } }).catch(() => {});
+            }
+            currentSessionUser = null;
+            authToken = null;
+            if (activeReservationsRefreshTimer) {
+                clearInterval(activeReservationsRefreshTimer);
+                activeReservationsRefreshTimer = null;
+            }
+            document.getElementById('app-view').classList.add('hidden');
+            document.getElementById('login-view').classList.remove('hidden');
+            document.getElementById('login-form').reset();
+            document.getElementById('login-error').classList.add('hidden');
+            document.getElementById('dashboard-alert').classList.add('hidden');
+            if (dashboardAlertTimeout) clearTimeout(dashboardAlertTimeout);
+        }
+
+        function switchTab(targetTabId) {
+            document.querySelectorAll('.tab-content').forEach(tab => tab.classList.add('hidden'));
+            document.getElementById(targetTabId).classList.remove('hidden');
+            
+            document.getElementById('dashboard-alert').classList.add('hidden'); 
+            if (dashboardAlertTimeout) clearTimeout(dashboardAlertTimeout);
+
+            document.querySelectorAll('#nav-menu button').forEach(btn => {
+                btn.classList.remove('text-brand-maroon', 'bg-red-50');
+                btn.classList.add('text-gray-600', 'hover:text-gray-900');
+            });
+            const activeBtn = document.getElementById(`btn-${targetTabId}`);
+            activeBtn.classList.remove('text-gray-600', 'hover:text-gray-900');
+            activeBtn.classList.add('text-brand-maroon', 'bg-red-50');
+
+            if (targetTabId === 'active-tab') {
+                loadActiveReservationsLogGrid();
+                if (activeReservationsRefreshTimer) clearInterval(activeReservationsRefreshTimer);
+                activeReservationsRefreshTimer = setInterval(() => {
+                    if (!document.getElementById('active-tab').classList.contains('hidden')) loadActiveReservationsLogGrid();
+                }, 30000);
+            } else if (activeReservationsRefreshTimer) {
+                clearInterval(activeReservationsRefreshTimer);
+                activeReservationsRefreshTimer = null;
+            }
+            if (targetTabId === 'history-tab') loadPermanentAuditTrailLedger();
+            if (targetTabId === 'daily-tab') { initializeReportDates(); loadDailyReport(); }
+        }
+
+        // Primary Booker verification is keyed on Enrollment Number. The current
+        // Student Master Database is the authoritative lookup source for Name and Email.
+        function setupSmartStudentSearchEngine() {
+            const rollField = document.getElementById('book-roll');
+            const nameField = document.getElementById('book-name');
+            const emailField = document.getElementById('book-email');
+            rollField.addEventListener('blur', async () => {
+                const value = rollField.value.trim();
+                if (!value) return;
+                try {
+                    const res = await authFetch(`/api/students/lookup?roll_number=${encodeURIComponent(value)}`);
+                    const data = await res.json();
+                    if (!res.ok) throw new Error(data.error || 'Student lookup failed.');
+                    if (data.found) {
+                        nameField.value = data.name || '';
+                        nameField.setAttribute('disabled', 'true'); nameField.classList.add('bg-gray-100');
+                        emailField.value = normalizeUniversityEmail(data.email || '');
+                        emailField.setAttribute('disabled', 'true'); emailField.classList.add('bg-gray-100');
+                        emailField.placeholder = 'Loaded from Student Master Database';
+                    } else {
+                        nameField.setAttribute('disabled', 'true'); nameField.classList.add('bg-gray-100'); nameField.value = '';
+                        emailField.setAttribute('disabled', 'true'); emailField.classList.add('bg-gray-100'); emailField.value = '';
+                        emailField.placeholder = 'Student not found in current Student Master Database';
+                        showDashboardAlert('Student not found in the current Student Master Database. Please contact the administrator.', true);
+                    }
+                } catch (err) {
+                    showDashboardAlert(err.message, true);
+                }
+            });
+
+            emailField.addEventListener('blur', () => {
+                if (!emailField.disabled) emailField.value = normalizeUniversityEmail(emailField.value);
+            });
+        }
+
+        function renderAdditionalPlayerFields() {
+            const count = Number(document.getElementById('additional-player-count').value || 0);
+            const container = document.getElementById('additional-players-container');
+            container.innerHTML = '';
+            for (let i = 0; i < count; i++) {
+                const card = document.createElement('div');
+                card.className = 'p-3 bg-gray-50 border border-gray-200 rounded grid grid-cols-1 md:grid-cols-3 gap-3';
+                card.dataset.participantIndex = String(i);
+                card.innerHTML = '<div><label class="block text-[11px] font-bold text-gray-600 uppercase mb-1">Player ' + (i + 1) + ' Enrollment Number</label><input type="text" data-player-roll class="w-full px-3 py-2 border border-gray-300 rounded text-sm" required maxlength="50"></div><div><label class="block text-[11px] font-bold text-gray-600 uppercase mb-1">Player Name</label><input type="text" data-player-name class="w-full px-3 py-2 border border-gray-300 rounded text-sm bg-gray-100" required maxlength="100" disabled></div><div><label class="block text-[11px] font-bold text-gray-600 uppercase mb-1">Email ID</label><input type="text" data-player-email class="w-full px-3 py-2 border border-gray-300 rounded text-sm bg-gray-100" required maxlength="150" disabled placeholder="Loaded from Student Master Database"></div><p data-player-note class="md:col-span-3 text-[11px] text-gray-400"></p>';
+                container.appendChild(card);
+
+                const roll = card.querySelector('[data-player-roll]');
+                const name = card.querySelector('[data-player-name]');
+                const email = card.querySelector('[data-player-email]');
+                const note = card.querySelector('[data-player-note]');
+
+                email.addEventListener('blur', () => {
+                    if (!email.readOnly) email.value = normalizeUniversityEmail(email.value);
+                });
+
+                roll.addEventListener('blur', async () => {
+                    const value = roll.value.trim();
+                    if (!value) return;
+                    try {
+                        const res = await authFetch('/api/students/by-roll?roll_number=' + encodeURIComponent(value));
+                        const data = await res.json();
+                        if (!res.ok) throw new Error(data.error || 'Student lookup failed.');
+                        if (data.found) {
+                            name.value = data.student.name || '';
+                            name.disabled = true; name.classList.add('bg-gray-100');
+                            email.value = normalizeUniversityEmail(data.student.email || '');
+                            email.disabled = true; email.classList.add('bg-gray-100');
+                            note.textContent = 'Student found in the current Student Master Database. Name and Email ID loaded automatically.';
+                            note.className = 'md:col-span-3 text-[11px] text-green-700';
+                        } else {
+                            name.value = ''; name.disabled = true; name.classList.add('bg-gray-100');
+                            email.value = ''; email.disabled = true; email.classList.add('bg-gray-100');
+                            note.textContent = 'Student not found in the current Student Master Database. This player cannot be added to a normal booking.';
+                            note.className = 'md:col-span-3 text-[11px] text-red-600';
+                        }
+                    } catch (error) {
+                        note.textContent = error.message;
+                        note.className = 'md:col-span-3 text-[11px] text-red-600';
+                    }
+                });
+            }
+        }
+
+        function readAdditionalPlayers() {
+            return [...document.querySelectorAll('#additional-players-container [data-participant-index]')].map(card => ({
+                roll_number: card.querySelector('[data-player-roll]').value.trim(),
+                name: card.querySelector('[data-player-name]').value.trim(),
+                email: normalizeUniversityEmail(card.querySelector('[data-player-email]').value)
+            }));
+        }
+
+        let sportsLayoutListenersInitialized = false;
+        async function refreshSportsLayoutMappingOptions() {
+            const sportSelect = document.getElementById('book-sport');
+            const courtSelect = document.getElementById('book-court');
+            const courtMessage = document.getElementById('book-court-msg');
+            try {
+                const res = await authFetch('/api/sports-layout');
+                const data = await res.json();
+                if (!res.ok) throw new Error(data.error || 'Unable to load sports and courts.');
+                if (!Array.isArray(data)) throw new Error('The server returned an invalid sports/courts list.');
+                internalSportsLayoutCache = data;
+
+                const populate = (id, defaultOpt, multi = false) => {
+                    const el = document.getElementById(id);
+                    if (!el) return;
+                    el.innerHTML = multi ? '' : `<option value="">${defaultOpt}</option>`;
+                    internalSportsLayoutCache.forEach(sport => {
+                        el.insertAdjacentHTML('beforeend', `<option value="${sport.id}">${escapeHtml(sport.name)}</option>`);
+                    });
+                };
+
+                populate('book-sport', '-- Choose Sport Category (Step 3) --');
+                populate('admin-court-sport', '-- Select Sport --');
+                populate('admin-remove-court-sport', '-- Select Sport --');
+                populate('bulk-sport', '-- Select Event Sport --');
+
+                if (!sportsLayoutListenersInitialized) {
+                    const populateCourts = (sourceId, targetId, multi = false) => {
+                        const source = document.getElementById(sourceId);
+                        if (!source) return;
+                        source.addEventListener('change', (e) => {
+                            const courtEl = document.getElementById(targetId);
+                            if (!courtEl) return;
+                            courtEl.innerHTML = multi ? '' : '<option value="">-- Choose Available Court Segment --</option>';
+                            const sport = internalSportsLayoutCache.find(s => String(s.id) === String(e.target.value));
+                            if (sport && Array.isArray(sport.courts)) {
+                                sport.courts.forEach(c => courtEl.insertAdjacentHTML('beforeend', `<option value="${c.id}">${escapeHtml(c.name)}</option>`));
+                            }
+                        });
+                    };
+                    populateCourts('admin-remove-court-sport', 'admin-remove-court-id');
+                    populateCourts('bulk-sport', 'bulk-courts', true);
+                    setupDynamicCourtAvailability();
+                    sportsLayoutListenersInitialized = true;
+                }
+
+                if (internalSportsLayoutCache.length === 0) {
+                    sportSelect.innerHTML = '<option value="">-- No Sports Configured — Contact Administrator --</option>';
+                    courtSelect.innerHTML = '<option value="">-- No Courts Configured --</option>';
+                    courtMessage.textContent = 'No sports or courts are configured. An administrator should verify the facility setup.';
+                    courtMessage.classList.remove('hidden');
+                } else {
+                    courtSelect.innerHTML = '<option value="">-- Select Date, Time & Sport First --</option>';
+                    courtMessage.textContent = 'No court available for the selected date and time.';
+                    courtMessage.classList.add('hidden');
+                }
+            } catch (err) {
+                console.error('Initialization error pulling resource maps:', err);
+                sportSelect.innerHTML = '<option value="">-- Unable To Load Sports --</option>';
+                courtSelect.innerHTML = '<option value="">-- Unable To Load Courts --</option>';
+                courtMessage.textContent = `Unable to load sports/courts: ${err.message}`;
+                courtMessage.classList.remove('hidden');
+            }
+        }
+
+        // ==========================================
+        // STEP 4: DYNAMIC COURT AVAILABILITY (New Booking form)
+        // Recalculates available courts whenever Date, Start Time, End Time or Sport changes.
+        // Backend is re-validated again at submission time regardless.
+        // ==========================================
+        let courtAvailabilityRequestToken = 0;
+        function setupDynamicCourtAvailability() {
+            const triggerIds = ['book-date', 'book-start', 'book-end', 'book-sport'];
+            triggerIds.forEach(id => {
+                const el = document.getElementById(id);
+                if (!el || el.dataset.availabilityBound === 'true') return;
+                el.dataset.availabilityBound = 'true';
+                el.addEventListener('change', refreshAvailableCourtsForBookingForm);
+            });
+        }
+
+        async function refreshAvailableCourtsForBookingForm() {
+            const requestToken = ++courtAvailabilityRequestToken;
+            const courtEl = document.getElementById('book-court');
+            const msgEl = document.getElementById('book-court-msg');
+            const date = document.getElementById('book-date').value;
+            const start = document.getElementById('book-start').value;
+            const end = document.getElementById('book-end').value;
+            const sportId = document.getElementById('book-sport').value;
+
+            msgEl.classList.add('hidden');
+
+            if (!date || !start || !end || !sportId) {
+                courtEl.innerHTML = '<option value="">-- Select Date, Time & Sport First --</option>';
+                return;
+            }
+
+            if (end <= start) {
+                courtEl.innerHTML = '<option value="">-- Invalid Time Range --</option>';
+                return;
+            }
+
+            courtEl.innerHTML = '<option value="">-- Checking Availability... --</option>';
+
+            try {
+                const res = await authFetch(`/api/courts/available?sport_id=${encodeURIComponent(sportId)}&date=${encodeURIComponent(date)}&start_time=${encodeURIComponent(start)}&end_time=${encodeURIComponent(end)}`);
+                const data = await res.json();
+
+                // Ignore stale responses if the user changed inputs again before this returned
+                if (requestToken !== courtAvailabilityRequestToken) return;
+
+                if (!res.ok) throw new Error(data.error || 'Failed to check court availability.');
+
+                const courts = data.courts || [];
+                if (courts.length === 0) {
+                    courtEl.innerHTML = '<option value="">-- No Court Available --</option>';
+                    msgEl.classList.remove('hidden');
+                } else {
+                    courtEl.innerHTML = '<option value="">-- Choose Available Court Segment --</option>';
+                    courts.forEach(c => courtEl.insertAdjacentHTML('beforeend', `<option value="${c.id}">${escapeHtml(c.name)}</option>`));
+                }
+            } catch (err) {
+                if (requestToken !== courtAvailabilityRequestToken) return;
+                courtEl.innerHTML = '<option value="">-- Unable To Check Availability --</option>';
+                msgEl.textContent = `Unable to check court availability: ${err.message || 'Unknown server error.'}`;
+                msgEl.classList.remove('hidden');
+                console.error('Court availability check failed:', err);
+            }
+        }
+
+        async function loadActiveReservationsLogGrid() {
+            const bulkContainer = document.getElementById('active-bulk-events-container');
+            const futureBulkContainer = document.getElementById('future-bulk-events-container');
+            const container = document.getElementById('active-bookings-table');
+            const futureContainer = document.getElementById('future-bookings-container');
+            
+            bulkContainer.innerHTML = '';
+            if(futureBulkContainer) futureBulkContainer.innerHTML = '';
+            container.innerHTML = `<tr><td colspan="5" class="p-6 text-center text-xs text-gray-400">Syncing live server status map...</td></tr>`;
+            futureContainer.innerHTML = ''; 
+            
+            try {
+                const res = await authFetch('/api/bookings/active');
+                const activeResponse = await res.json();
+                if (!res.ok) throw new Error(activeResponse.error || 'Unable to load live reservations.');
+                const records = Array.isArray(activeResponse) ? activeResponse : (activeResponse.bookings || []);
+
+                // The server timestamp is authoritative so the Active Slots view
+                // cannot be affected by the computer's local timezone/clock.
+                const serverNowIST = activeResponse.now_ist || '';
+                const currentDateStr = serverNowIST.slice(0, 10);
+                const currentTimeStr = serverNowIST.slice(11, 16);
+                
+                const activeSlots = [];
+                const futureSlots = [];
+                const allBulkGroups = {};
+                
+                records.forEach(row => {
+                    if (row.booking_type === 'bulk' && row.bulk_group_id) {
+                        if (!allBulkGroups[row.bulk_group_id]) allBulkGroups[row.bulk_group_id] = [];
+                        allBulkGroups[row.bulk_group_id].push(row);
+                    } else if (row.is_currently_active || row.runtime_status === 'active') {
+                        activeSlots.push(row);
+                    } else if (row.is_future || row.runtime_status === 'future') {
+                        futureSlots.push(row);
+                    }
+                });
+
+                const activeBulkGroups = {};
+                const futureBulkGroups = {};
+
+                for (const groupId in allBulkGroups) {
+                    const slots = allBulkGroups[groupId];
+                    let allFuture = true;
+                    let allCompleted = true;
+                    let isRunning = false;
+
+                    slots.forEach(slot => {
+                        let isPast = false;
+                        let isFuture = false;
+                        let isSlotRunning = false;
+
+                        if (slot.is_currently_active || slot.runtime_status === 'active') {
+                            isSlotRunning = true;
+                        } else if (slot.is_future || slot.runtime_status === 'future') {
+                            isFuture = true;
+                        } else {
+                            isPast = true;
+                        }
+
+                        if (!isFuture) allFuture = false;
+                        if (!isPast) allCompleted = false;
+                        if (isSlotRunning) isRunning = true;
+                    });
+
+                    if (allCompleted) {
+                        // Do not display in Active or Future sections
+                    } else if (allFuture) {
+                        futureBulkGroups[groupId] = slots;
+                    } else if (isRunning) {
+                        activeBulkGroups[groupId] = slots;
+                    }
+                }
+
+                // Generate Grouped Active Bulk Event Cards
+                let activeBulkHtml = '';
+                if (Object.keys(activeBulkGroups).length > 0) {
+                    activeBulkHtml += `<div class="mb-6"><h2 class="text-base font-bold text-brand-maroon mb-4 border-b border-red-200 pb-2">Active University Events (Bulk Reservations)</h2>`;
+                    for (const groupId in activeBulkGroups) {
+                        const slots = activeBulkGroups[groupId];
+                        const stats = window.computeBulkStats(slots);
+                        activeBulkHtml += window.buildActiveBulkCard(groupId, slots, stats);
+                    }
+                    activeBulkHtml += `</div>`;
+                }
+                bulkContainer.innerHTML = activeBulkHtml;
+
+                // Generate Grouped Future Bulk Event Cards
+                let futureBulkHtml = '';
+                if (Object.keys(futureBulkGroups).length > 0) {
+                    futureBulkHtml += `<div class="mb-6"><h2 class="text-base font-bold text-gray-900 mb-4 border-b pb-2">Future University Events (Bulk Reservations)</h2>`;
+                    for (const groupId in futureBulkGroups) {
+                        const slots = futureBulkGroups[groupId];
+                        const stats = window.computeBulkStats(slots);
+                        futureBulkHtml += window.buildActiveBulkCard(groupId, slots, stats);
+                    }
+                    futureBulkHtml += `</div>`;
+                }
+                if (futureBulkContainer) futureBulkContainer.innerHTML = futureBulkHtml;
+
+                const buildRowHTML = (row) => {
+                    const isBulk = row.booking_type === 'bulk';
+                    
+                    let adminInfoText = '';
+                    if (row.admin_name) {
+                        adminInfoText = `<div class="text-xs text-brand-maroon mt-0.5">Created by: ${escapeHtml(row.admin_name)}</div>`;
+                    }
+                    
+                    const userDisplay = isBulk 
+                        ? `<div class="text-sm font-bold text-brand-maroon uppercase tracking-wide">University Event</div><div class="text-xs text-gray-500 font-bold">${escapeHtml(row.reason)}</div>${adminInfoText}`
+                        : `<div class="text-[10px] uppercase font-bold text-brand-maroon">Primary Player / Booker</div><div class="text-sm font-bold">${escapeHtml(row.display_student_name || row.student_name)}</div><div class="text-xs text-gray-400">Roll: ${escapeHtml(row.display_roll_number || row.roll_number)}</div>${bookingPlayersToggle(row)}${adminInfoText}`;
+                    
+                    let actionBtn = `<button onclick="executeImmediateCancellation(${row.id})" class="text-[11px] font-bold text-red-600 hover:text-red-900 hover:bg-red-50 border border-red-200 px-2 py-1 rounded">Terminate Entry</button>`;
+                    
+                    if(isBulk && currentSessionUser && currentSessionUser.role === 'admin') {
+                        actionBtn += `<button onclick="cancelBulkEvent('${row.bulk_group_id}')" class="mt-1 block w-full text-[10px] font-bold text-white bg-red-800 hover:bg-red-950 px-2 py-1 rounded uppercase tracking-wider">Cancel Entire Event</button>`;
+                    } else if (isBulk && currentSessionUser && currentSessionUser.role !== 'admin') {
+                        actionBtn = `<span class="text-[10px] font-bold text-gray-400 uppercase">Admin Lock</span>`;
+                    }
+
+                    return `
+                        <tr class="hover:bg-gray-50 border-b border-gray-100 ${isBulk ? 'bg-red-50 bg-opacity-30' : ''}">
+                            <td class="px-6 py-4 font-mono font-bold tracking-wider ${isBulk ? 'text-gray-500' : 'text-brand-maroon'} text-sm">${row.token}</td>
+                            <td class="px-6 py-4">${userDisplay}</td>
+                            <td class="px-6 py-4 text-xs font-bold text-gray-700">${row.sport_name} &rarr; <span class="bg-gray-100 px-1.5 py-0.5 rounded text-gray-800 border border-gray-200">${row.court_name}</span></td>
+                            <td class="px-6 py-4 text-xs"><div class="font-bold">${row.booking_date}</div><div class="text-gray-500">${row.start_time} - ${row.end_time}</div></td>
+                            <td class="px-6 py-4 text-right">${actionBtn}</td>
+                        </tr>
+                    `;
+                };
+
+                container.innerHTML = activeSlots.length === 0 
+                    ? `<tr><td colspan="5" class="p-8 text-center text-sm text-gray-400 font-normal">Zero active facility usages running at this precise moment.</td></tr>`
+                    : activeSlots.map(buildRowHTML).join('');
+
+                let futureHtml = `<h2 class="text-base font-bold text-gray-900 mt-2 mb-2 border-b pb-2">Future Slot Bookings (Normal Bookings)</h2>`;
+                if (futureSlots.length === 0) {
+                    futureHtml += `<div class="bg-white p-6 rounded-lg border border-gray-200 shadow-sm text-center text-sm text-gray-400 font-normal">No future normal bookings scheduled at this time.</div>`;
+                } else {
+                    const futureBySport = {};
+                    futureSlots.forEach(row => {
+                        if (!futureBySport[row.sport_name]) futureBySport[row.sport_name] = [];
+                        futureBySport[row.sport_name].push(row);
+                    });
+                    
+                    for (const sport of Object.keys(futureBySport).sort()) {
+                        futureHtml += `
+                        <div class="bg-white rounded-lg border border-gray-200 shadow-sm overflow-hidden mb-6">
+                            <div class="px-6 py-3 border-b border-gray-200 bg-gray-50"><h3 class="text-sm font-bold uppercase tracking-wider text-gray-700">${sport} Allocations</h3></div>
+                            <div class="overflow-x-auto"><table class="w-full text-left text-sm text-gray-500">
+                                <thead class="bg-gray-100 text-xs font-bold uppercase text-gray-700 tracking-wider">
+                                    <tr><th class="px-6 py-2">Identifier</th><th class="px-6 py-2">Account Ref</th><th class="px-6 py-2">Assigned Asset</th><th class="px-6 py-2">Scheduled Slot</th><th class="px-6 py-2 text-right">Actions</th></tr>
+                                </thead>
+                                <tbody class="divide-y divide-gray-200 text-gray-900 font-medium">
+                                    ${futureBySport[sport].map(buildRowHTML).join('')}
+                                </tbody>
+                            </table></div></div>`;
+                    }
+                }
+                futureContainer.innerHTML = futureHtml;
+
+            } catch (err) { console.error(err); }
+        }
+
+        async function loadPermanentAuditTrailLedger() {
+            const bulkContainer = document.getElementById('history-bulk-events-container');
+            const container = document.getElementById('history-bookings-table');
+            
+            bulkContainer.innerHTML = '';
+            
+            try {
+                const res = await authFetch('/api/bookings/history');
+                const logs = await res.json();
+                
+                const istNow = new Date(new Date().toLocaleString("en-US", {timeZone: "Asia/Kolkata"}));
+                const currentYear = istNow.getFullYear();
+                const currentMonth = String(istNow.getMonth() + 1).padStart(2, '0');
+                const currentDay = String(istNow.getDate()).padStart(2, '0');
+                const currentDateStr = `${currentYear}-${currentMonth}-${currentDay}`;
+                const currentHours = String(istNow.getHours()).padStart(2, '0');
+                const currentMinutes = String(istNow.getMinutes()).padStart(2, '0');
+                const currentTimeStr = `${currentHours}:${currentMinutes}`;
+
+                const normalLogs = [];
+                const bulkGroups = {};
+
+                logs.forEach(row => {
+                    if (row.booking_type === 'bulk' && row.bulk_group_id) {
+                        if (!bulkGroups[row.bulk_group_id]) bulkGroups[row.bulk_group_id] = [];
+                        bulkGroups[row.bulk_group_id].push(row);
+                    } else {
+                        normalLogs.push(row);
+                    }
+                });
+
+                // Generate Grouped Bulk Event History Cards
+                let bulkHtml = '';
+                if (Object.keys(bulkGroups).length > 0) {
+                    bulkHtml += `<div class="mb-6"><h2 class="text-base font-bold text-gray-900 mb-4 border-b border-gray-200 pb-2">University Events History (Bulk Reservations)</h2>`;
+                    
+                    for (const groupId in bulkGroups) {
+                        const slots = bulkGroups[groupId];
+                        const stats = window.computeBulkStats(slots);
+
+                        let overallStatus = 'Completed';
+                        let hasActive = false;
+                        let hasCancelled = false;
+                        let hasOver = false;
+
+                        let detailsHtml = slots.map(row => {
+                            let displayStatus = row.status;
+                            if (displayStatus === 'active') {
+                                if (row.booking_date < currentDateStr || (row.booking_date === currentDateStr && row.end_time <= currentTimeStr)) {
+                                    displayStatus = 'over';
+                                }
+                            }
+
+                            if (displayStatus === 'active') hasActive = true;
+                            if (displayStatus === 'cancelled') hasCancelled = true;
+                            if (displayStatus === 'over') hasOver = true;
+
+                            let statusTheme = '';
+                            if (displayStatus === 'active') statusTheme = 'bg-green-100 text-green-800 font-bold';
+                            else if (displayStatus === 'over') statusTheme = 'bg-gray-200 text-gray-700 font-bold';
+                            else statusTheme = 'bg-red-100 text-red-800 font-bold';
+
+                            let termInfo = '-';
+                            if (row.status === 'cancelled') {
+                                termInfo = `<div class="text-[10px] text-red-600 font-semibold">By: ${escapeHtml(row.cancelled_by || 'System')} | ${escapeHtml(row.cancellation_reason || 'N/A')}</div>`;
+                            }
+
+                            return `
+                                <tr class="border-b border-gray-100 hover:bg-gray-50 text-xs">
+                                    <td class="px-4 py-3 font-semibold text-gray-700">${escapeHtml(row.court_name)}</td>
+                                    <td class="px-4 py-3">${escapeHtml(row.booking_date)}</td>
+                                    <td class="px-4 py-3">${escapeHtml(row.start_time)}</td>
+                                    <td class="px-4 py-3">${escapeHtml(row.end_time)}</td>
+                                    <td class="px-4 py-3"><span class="px-2 py-0.5 rounded text-[10px] uppercase tracking-wider ${statusTheme}">${displayStatus}</span></td>
+                                    <td class="px-4 py-3 text-right">${termInfo}</td>
+                                </tr>
+                            `;
+                        }).join('');
+
+                        if (hasActive) overallStatus = 'Active / In Progress';
+                        else if (hasCancelled && !hasOver) overallStatus = 'Terminated';
+                        else if (hasCancelled && hasOver) overallStatus = 'Partially Completed';
+
+                        let statusBadgeClass = hasActive ? 'bg-green-100 text-green-800' : (overallStatus.includes('Terminated') ? 'bg-red-100 text-red-800' : 'bg-gray-200 text-gray-700');
+
+                        bulkHtml += `
+                            <div class="bg-white rounded-lg border border-gray-200 shadow-sm overflow-hidden mb-4">
+                                <div class="p-5 border-b border-gray-200 bg-gray-50 flex flex-col md:flex-row md:justify-between md:items-center gap-4">
+                                    <div class="flex-1">
+                                        <h3 class="text-sm font-bold text-gray-900 uppercase tracking-wide">${stats.reason}</h3>
+                                        <div class="mt-2 flex flex-wrap gap-x-6 gap-y-2 text-xs text-gray-600">
+                                            <div><span class="font-bold text-gray-400 uppercase mr-1 text-[10px] tracking-wider">Sport:</span><span class="font-semibold text-gray-800">${stats.sport}</span></div>
+                                            <div><span class="font-bold text-gray-400 uppercase mr-1 text-[10px] tracking-wider">Dates:</span><span class="font-semibold text-gray-800">${stats.dateRange}</span></div>
+                                            <div><span class="font-bold text-gray-400 uppercase mr-1 text-[10px] tracking-wider">Slots:</span><span class="font-semibold text-gray-800">${stats.totalSlots}</span></div>
+                                            <div><span class="font-bold text-gray-400 uppercase mr-1 text-[10px] tracking-wider">Created By:</span><span class="font-semibold text-gray-800">${stats.adminName}</span></div>
+                                            <div><span class="font-bold text-gray-400 uppercase mr-1 text-[10px] tracking-wider">Status:</span><span class="px-2 py-0.5 rounded text-[10px] font-bold uppercase tracking-wider ${statusBadgeClass}">${overallStatus}</span></div>
+                                        </div>
+                                    </div>
+                                    <button onclick="toggleBulkDetails('hist-${groupId}')" class="px-3 py-1.5 bg-white border border-gray-300 text-gray-700 text-xs font-bold rounded hover:bg-gray-100 transition-colors whitespace-nowrap shadow-sm min-w-fit">View Details</button>
+                                </div>
+                                <div id="bulk-details-hist-${groupId}" class="hidden overflow-x-auto bg-white border-t border-gray-100">
+                                    <table class="w-full text-left text-sm text-gray-500">
+                                        <thead class="bg-gray-100 text-[10px] font-bold uppercase text-gray-700 tracking-wider">
+                                            <tr>
+                                                <th class="px-4 py-3">Court Number</th>
+                                                <th class="px-4 py-3">Date</th>
+                                                <th class="px-4 py-3">Start Time</th>
+                                                <th class="px-4 py-3">End Time</th>
+                                                <th class="px-4 py-3">Current Status</th>
+                                                <th class="px-4 py-3 text-right">Termination Info</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>${detailsHtml}</tbody>
+                                    </table>
+                                </div>
+                            </div>
+                        `;
+                    }
+                    bulkHtml += `</div>`;
+                }
+                bulkContainer.innerHTML = bulkHtml;
+
+                // Render normal logs exactly as before
+                container.innerHTML = normalLogs.map(row => {
+                    let displayStatus = row.status;
+                    
+                    if (displayStatus === 'active') {
+                        if (row.booking_date < currentDateStr) {
+                            displayStatus = 'over';
+                        } else if (row.booking_date === currentDateStr && row.end_time <= currentTimeStr) {
+                            displayStatus = 'over';
+                        }
+                    }
+                    
+                    let statusTheme = '';
+                    if (displayStatus === 'active') {
+                        statusTheme = 'bg-green-50 text-green-700 font-bold';
+                    } else if (displayStatus === 'over') {
+                        statusTheme = 'bg-gray-100 text-gray-600 font-bold';
+                    } else {
+                        statusTheme = 'bg-gray-100 text-gray-400 line-through';
+                    }
+                    
+                    const nameDisp = row.booking_type === 'bulk' ? `[Event] ${escapeHtml(row.reason)}` : `<div class="text-[10px] uppercase text-brand-maroon">Primary Player / Booker</div>${escapeHtml(row.display_student_name || row.student_name)}${bookingPlayersToggle(row)}`;
+                    return `<tr class="hover:bg-gray-50 border-b border-gray-100 text-xs font-medium">
+                        <td class="px-6 py-3 font-mono font-bold">${escapeHtml(row.token)}</td><td class="px-6 py-3 font-bold text-gray-800">${nameDisp}</td>
+                        <td class="px-6 py-3">${escapeHtml(row.sport_name)} (${escapeHtml(row.court_name)})</td><td class="px-6 py-3">${escapeHtml(row.booking_date)}</td>
+                        <td class="px-6 py-3 font-mono">${escapeHtml(row.start_time)} - ${escapeHtml(row.end_time)}</td>
+                        <td class="px-6 py-3"><span class="px-2 py-0.5 rounded text-[10px] uppercase tracking-wider ${statusTheme}">${displayStatus}</span></td>
+                    </tr>`;
+                }).join('');
+            } catch (err) { console.error(err); }
+        }
+
+        // Date-range Excel download. The existing on-screen daily view remains
+        // available below, but the exported report is filtered by booking_date.
+        function showReportRangeError(message) {
+            const box = document.getElementById('daily-report-range-error');
+            if (!box) return;
+            if (!message) {
+                box.classList.add('hidden');
+                box.innerText = '';
+                return;
+            }
+            box.innerText = message;
+            box.classList.remove('hidden');
+        }
+
+        function initializeReportDates() {
+            const from = document.getElementById('report-from-date');
+            const to = document.getElementById('report-to-date');
+            if (!from || !to || (from.value && to.value)) return;
+            const istNow = new Date(new Date().toLocaleString('en-US', { timeZone: 'Asia/Kolkata' }));
+            const today = `${istNow.getFullYear()}-${String(istNow.getMonth() + 1).padStart(2, '0')}-${String(istNow.getDate()).padStart(2, '0')}`;
+            from.value = today;
+            to.value = today;
+        }
+
+        async function downloadDateRangeReport() {
+            initializeReportDates();
+            const fromDate = document.getElementById('report-from-date')?.value || '';
+            const toDate = document.getElementById('report-to-date')?.value || '';
+            const button = document.getElementById('download-daily-report-btn');
+
+            showReportRangeError('');
+            if (!fromDate || !toDate) {
+                showReportRangeError('Please select both From Date and To Date.');
+                return;
+            }
+            if (fromDate > toDate) {
+                showReportRangeError('From Date cannot be later than To Date.');
+                return;
+            }
+
+            const originalText = button ? button.innerText : 'Download Excel Report';
+            if (button) {
+                button.disabled = true;
+                button.innerText = 'Preparing Excel...';
+                button.classList.add('opacity-70', 'cursor-not-allowed');
+            }
+
+            try {
+                const query = new URLSearchParams({
+                    from_date: fromDate,
+                    to_date: toDate
+                });
+                const res = await authFetch(`/api/bookings/daily-report/download?${query.toString()}`);
+                if (!res.ok) {
+                    let message = 'Unable to generate the Excel report. Please try again.';
+                    try {
+                        const data = await res.json();
+                        message = data.error || message;
+                    } catch (_) {}
+                    throw new Error(message);
+                }
+
+                const blob = await res.blob();
+                const disposition = res.headers.get('content-disposition') || '';
+                const match = disposition.match(/filename="?([^";]+)"?/i);
+                const filename = match ? match[1] : `University_Sports_Booking_Report_${fromDate}_to_${toDate}.xlsx`;
+                const url = URL.createObjectURL(blob);
+                const link = document.createElement('a');
+                link.href = url;
+                link.download = filename;
+                document.body.appendChild(link);
+                link.click();
+                link.remove();
+                URL.revokeObjectURL(url);
+                showDashboardAlert('Excel report downloaded successfully.', false);
+            } catch (err) {
+                showReportRangeError(err.message || 'Unable to generate the Excel report. Please try again.');
+                showDashboardAlert(err.message || 'Unable to generate the Excel report. Please try again.', true);
+            } finally {
+                if (button) {
+                    button.disabled = false;
+                    button.innerText = originalText;
+                    button.classList.remove('opacity-70', 'cursor-not-allowed');
+                }
+            }
+        }
+
+        async function downloadBulkBookingReport(){
+            initializeReportDates();const fromDate=document.getElementById('report-from-date')?.value||'',toDate=document.getElementById('report-to-date')?.value||'',button=document.getElementById('download-bulk-report-btn');showReportRangeError('');
+            if(!fromDate||!toDate)return showReportRangeError('Please select both From Date and To Date.');if(fromDate>toDate)return showReportRangeError('From Date cannot be later than To Date.');
+            const originalText=button?button.innerText:'Download Bulk Booking Excel';if(button){button.disabled=true;button.innerText='Preparing Bulk Excel...';button.classList.add('opacity-70','cursor-not-allowed');}
+            try{const query=new URLSearchParams({from_date:fromDate,to_date:toDate}),res=await authFetch(`/api/bookings/daily-report/bulk-download?${query.toString()}`);if(!res.ok){let message='Unable to generate the Bulk Booking Excel report. Please try again.';try{const data=await res.json();message=data.error||message;}catch(_){}throw new Error(message);}const blob=await res.blob(),disposition=res.headers.get('content-disposition')||'',match=disposition.match(/filename="?([^";]+)"?/i),filename=match?match[1]:`Bulk_Booking_Report_${fromDate}_to_${toDate}.xlsx`,url=URL.createObjectURL(blob),link=document.createElement('a');link.href=url;link.download=filename;document.body.appendChild(link);link.click();link.remove();URL.revokeObjectURL(url);}catch(err){showReportRangeError(err.message||'Unable to generate the Bulk Booking Excel report.');}finally{if(button){button.disabled=false;button.innerText=originalText;button.classList.remove('opacity-70','cursor-not-allowed');}}
+        }
+
+        async function loadDailyReport() {
+            const container = document.getElementById('daily-report-container');
+            container.innerHTML = '<div class="text-sm text-gray-400">Loading...</div>';
+            try {
+                const res = await authFetch('/api/bookings/daily-report');
+                const data = await res.json();
+                if (!res.ok) throw new Error(data.error || 'Unable to load the daily report.');
+
+                document.getElementById('daily-report-date').innerText = `Bookings for ${formatDisplayDate(data.date)}`;
+
+                if (!data.sports || data.sports.length === 0) {
+                    container.innerHTML = '<div class="bg-white p-8 rounded-lg border border-gray-200 shadow-sm text-center text-sm text-gray-500 font-medium">No bookings recorded for today yet.</div>';
+                    return;
+                }
+
+                const badgeBase = 'px-2 py-0.5 rounded font-bold uppercase tracking-wider text-[10px] border ';
+                const statusBadge = (booking) => {
+                    // Cancelled bookings are always Terminated; otherwise the server's
+                    // IST-based runtime status decides between Active / Future / Over.
+                    const state = booking.status === 'cancelled' ? 'terminated' : (booking.runtime_status || 'active');
+                    if (state === 'terminated') return `<span class="${badgeBase}bg-red-100 text-red-800 border-red-200">Terminated</span>`;
+                    if (state === 'over') return `<span class="${badgeBase}bg-gray-100 text-gray-700 border-gray-300">Over</span>`;
+                    if (state === 'future') return `<span class="${badgeBase}bg-blue-100 text-blue-800 border-blue-200">Future</span>`;
+                    return `<span class="${badgeBase}bg-green-100 text-green-800 border-green-200">Active</span>`;
+                };
+
+                container.innerHTML = data.sports.map(sportGroup => {
+                    const bookingsHtml = sportGroup.bookings.map(b => {
+                        const primaryHtml = b.primary_booker
+                            ? `<div class="text-[10px] uppercase font-bold text-brand-maroon mb-0.5">Primary Booker</div>
+                               <div class="text-sm font-bold text-gray-900">${escapeHtml(b.primary_booker.name)}</div>
+                               <div class="text-xs text-gray-500">Enrollment: ${escapeHtml(b.primary_booker.roll_number)} &middot; Email: ${escapeHtml(b.primary_booker.email || 'Not Available')}</div>`
+                            : `<div class="text-[10px] uppercase font-bold text-brand-maroon mb-0.5">Bulk / Event Booking</div><div class="text-sm font-bold text-gray-900">${escapeHtml(b.reason || 'Reserved')}</div>`;
+
+                        const playersHtml = (b.additional_players && b.additional_players.length)
+                            ? `<div class="mt-2 pt-2 border-t border-gray-100">
+                                 <div class="text-[10px] uppercase font-bold text-gray-500 mb-1">Additional Players</div>
+                                 ${b.additional_players.map(p => `<div class="text-xs text-gray-700">${escapeHtml(p.name)} &middot; Enrollment: ${escapeHtml(p.roll_number)} &middot; Email: ${escapeHtml(p.email || 'Not Available')} &middot; Role: Additional Player</div>`).join('')}
+                               </div>`
+                            : '';
+
+                        return `<div class="p-4 border-b border-gray-100 last:border-b-0">
+                            <div class="flex justify-between items-start gap-4">
+                                <div>${primaryHtml}</div>
+                                <div class="text-right flex-shrink-0">
+                                    <div class="text-xs font-bold text-gray-800">${escapeHtml(b.court_name)}</div>
+                                    <div class="text-xs text-gray-500 font-mono">${escapeHtml(b.start_time)} - ${escapeHtml(b.end_time)}</div>
+                                    <div class="mt-1">${statusBadge(b)}</div>
+                                </div>
+                            </div>
+                            ${playersHtml}
+                        </div>`;
+                    }).join('');
+
+                    return `<div class="bg-white rounded-lg border border-gray-200 shadow-sm overflow-hidden">
+                        <div class="px-6 py-3 border-b border-gray-200 bg-gray-50 flex justify-between items-center">
+                            <h3 class="text-sm font-bold uppercase tracking-wider text-brand-maroon">${escapeHtml(sportGroup.sport_name)}</h3>
+                            <span class="text-[10px] font-bold text-gray-500 uppercase">${sportGroup.bookings.length} Booking(s)</span>
+                        </div>
+                        <div>${bookingsHtml}</div>
+                    </div>`;
+                }).join('');
+            } catch (err) {
+                container.innerHTML = `<div class="bg-white p-6 rounded-lg border border-red-200 shadow-sm text-sm text-red-600 font-medium">${escapeHtml(err.message)}</div>`;
+            }
+        }
+
+        // ==========================================
+        // CORRECTED STUDENT SEARCH ENGINE 
+        // ==========================================
+        function setupStudentHistorySearchEngine() {
+            document.getElementById('student-search-form').addEventListener('submit', async (e) => {
+                e.preventDefault();
+                
+                const rollInput = document.getElementById('search-roll-number').value.trim();
+                if (!rollInput) return;
+
+                await performStudentSearch(rollInput);
+            });
+        }
+
+        // Refreshes the whole Search Student results panel (details, restricted
+        // list status, complete booking history with role) using the single
+        // Enrollment-Number-keyed full-profile endpoint.
+        async function performStudentSearch(rollInputRaw) {
+                const searchRoll = rollInputRaw.trim().toUpperCase();
+                
+                const container = document.getElementById('search-results-container');
+                const emptyState = document.getElementById('search-empty-state');
+                const msg = document.getElementById('search-empty-msg');
+                const bookingsContainer = document.getElementById('search-bookings-container');
+                
+                try {
+                    const res = await authFetch(`/api/students/full-profile?roll_number=${encodeURIComponent(searchRoll)}`);
+                    const data = await res.json();
+
+                    if (!res.ok) {
+                        container.classList.add('hidden');
+                        msg.innerText = data.error || "No student record found for this Enrollment Number.";
+                        emptyState.classList.remove('hidden');
+                        return;
+                    }
+
+                    currentSearchedStudent = data.student;
+
+                    document.getElementById('search-res-name').innerText = data.student.name || 'Unknown';
+                    document.getElementById('search-res-roll').innerText = data.student.roll_number || searchRoll;
+                    document.getElementById('search-res-email').innerText = data.student.email || 'Not Available';
+                    
+                    emptyState.classList.add('hidden');
+                    container.classList.remove('hidden');
+
+                    renderRestrictedListPanel(data.restricted_list);
+
+                    const studentBookings = data.booking_history || [];
+                    if (studentBookings.length === 0) {
+                        bookingsContainer.innerHTML = `<div class="bg-white p-6 rounded-lg border border-gray-200 shadow-sm text-center text-sm text-gray-500 font-medium">No booking records found for this student yet.</div>`;
+                        return;
+                    }
+                    
+                    const grouped = {};
+                    studentBookings.forEach(b => {
+                        const sportKey = b.sport_name || 'Uncategorized';
+                        if (!grouped[sportKey]) grouped[sportKey] = [];
+                        grouped[sportKey].push(b);
+                    });
+                    
+                    let html = '';
+                    const istNow = new Date(new Date().toLocaleString("en-US", {timeZone: "Asia/Kolkata"}));
+                    const currentDateStr = `${istNow.getFullYear()}-${String(istNow.getMonth() + 1).padStart(2, '0')}-${String(istNow.getDate()).padStart(2, '0')}`;
+                    const currentTimeStr = `${String(istNow.getHours()).padStart(2, '0')}:${String(istNow.getMinutes()).padStart(2, '0')}`;
+
+                    for (const sport of Object.keys(grouped).sort()) {
+                        html += `
+                        <div class="bg-white rounded-lg border border-gray-200 shadow-sm overflow-hidden">
+                            <div class="px-6 py-3 border-b border-gray-200 bg-gray-50 flex justify-between items-center">
+                                <h3 class="text-sm font-bold uppercase tracking-wider text-brand-maroon">${sport} Reservations</h3>
+                                <span class="text-[10px] font-bold text-gray-500 uppercase">${grouped[sport].length} Total Logs</span>
+                            </div>
+                            <div class="overflow-x-auto">
+                                <table class="w-full text-left text-sm text-gray-500">
+                                    <thead class="bg-gray-100 text-[10px] font-bold uppercase text-gray-700 tracking-wider">
+                                        <tr>
+                                            <th class="px-5 py-3">Token & Asset Assignment</th>
+                                            <th class="px-5 py-3">Schedule Slot</th>
+                                            <th class="px-5 py-3">System Creation Audit</th>
+                                            <th class="px-5 py-3">Current Status</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody class="divide-y divide-gray-200 text-gray-900 font-medium text-xs">
+                        `;
+                        
+                        grouped[sport].forEach(b => {
+                            let displayStatus = b.status;
+                            if (displayStatus === 'active') {
+                                if (b.booking_date < currentDateStr || (b.booking_date === currentDateStr && b.end_time <= currentTimeStr)) {
+                                    displayStatus = 'completed (over)';
+                                }
+                            }
+                            
+                            let statusBadge = '';
+                            if (displayStatus === 'active') statusBadge = '<span class="bg-green-100 text-green-800 border border-green-200 px-2 py-0.5 rounded font-bold uppercase tracking-wider text-[10px]">Active</span>';
+                            else if (displayStatus === 'completed (over)') statusBadge = '<span class="bg-gray-200 text-gray-700 border border-gray-300 px-2 py-0.5 rounded font-bold uppercase tracking-wider text-[10px]">Completed</span>';
+                            else statusBadge = '<span class="bg-red-100 text-red-800 border border-red-200 px-2 py-0.5 rounded font-bold uppercase tracking-wider text-[10px]">Terminated</span>';
+                            
+                            let creatorBadge = b.admin_name ? `<span class="text-gray-400">Created By:</span> <span class="text-brand-maroon font-bold">${escapeHtml(b.admin_name)}</span>` : `<span class="text-gray-400">Created By:</span> <span class="text-gray-400 italic">Not Recorded</span>`;
+                            
+                            let termHtml = '';
+                            if (b.status === 'cancelled') {
+                                termHtml = `
+                                    <div class="mt-2 p-2 bg-red-50 border border-red-100 rounded text-[10px]">
+                                        <div class="text-red-700 font-bold mb-0.5">TERMINATION DETAILS</div>
+                                        ${b.cancelled_by ? `<div class="text-gray-600"><span class="font-bold text-gray-800">By:</span> ${escapeHtml(b.cancelled_by)}</div>` : ''}
+                                        ${b.cancellation_reason ? `<div class="text-gray-600"><span class="font-bold text-gray-800">Reason:</span> ${escapeHtml(b.cancellation_reason)}</div>` : ''}
+                                    </div>
+                                `;
+                            }
+
+                            const roleLabel = b.role === 'additional' ? 'Participated as Additional Player' : 'Role: Primary Booker';
+                            const otherPartyHtml = b.role === 'additional'
+                                ? `<div class="text-gray-400 text-[10px] mt-0.5">Primary Booker: ${escapeHtml(b.primary_booker_name || 'Unknown')} · Enrollment: ${escapeHtml(b.primary_booker_roll || 'Unknown')} · Email: ${escapeHtml(b.primary_booker_email || 'Not Available')} · Role: Primary Booker</div>`
+                                : '';
+                            
+                            html += `
+                                <tr class="hover:bg-gray-50 border-b border-gray-100">
+                                    <td class="px-5 py-3 align-top">
+                                        <div class="font-mono font-bold text-brand-maroon text-sm">${escapeHtml(b.token)}</div>
+                                        <div class="text-gray-600 font-semibold mt-0.5">${escapeHtml(b.court_name || 'System Asset')}</div>
+                                        <div class="text-[10px] font-bold ${b.role === 'additional' ? 'text-blue-700' : 'text-brand-maroon'}">${roleLabel}</div>
+                                        ${otherPartyHtml}
+                                        ${b.additional_player_details && b.additional_player_details.length ? `<div class="mt-2 pt-2 border-t border-gray-100"><div class="text-[10px] uppercase font-bold text-gray-500 mb-1">Additional Players</div>${b.additional_player_details.map(p => `<div class="text-[10px] text-gray-600">${escapeHtml(p.name)} · Enrollment: ${escapeHtml(p.roll_number)} · Email: ${escapeHtml(p.email || 'Not Available')} · Role: Additional Player</div>`).join('')}</div>` : ''}
+                                    </td>
+                                    <td class="px-5 py-3 align-top">
+                                        <div class="font-bold text-gray-800">${escapeHtml(b.booking_date)}</div>
+                                        <div class="text-gray-500 font-semibold mt-0.5">${escapeHtml(b.start_time)} - ${escapeHtml(b.end_time)}</div>
+                                    </td>
+                                    <td class="px-5 py-3 align-top">
+                                        <div>${creatorBadge}</div>
+                                    </td>
+                                    <td class="px-5 py-3 align-top">
+                                        <div>${statusBadge}</div>
+                                        ${termHtml}
+                                    </td>
+                                </tr>
+                            `;
+                        });
+                        
+                        html += `</tbody></table></div></div>`;
+                    }
+                    bookingsContainer.innerHTML = html;
+                    
+                } catch (err) {
+                    console.error("Search Engine Retrieval Failure:", err);
+                    container.classList.add('hidden');
+                    msg.innerText = "Error retrieving historical audit records. The system may be offline.";
+                    emptyState.classList.remove('hidden');
+                }
+        }
+
+        // Clears the currently displayed search result from the Search Student interface only.
+        // This does NOT touch the database, bookings, or blacklist records in any way -
+        // it simply resets the panel back to its initial/empty state so another
+        // student can be searched.
+        function clearStudentSearchResults() {
+            document.getElementById('search-results-container').classList.add('hidden');
+            document.getElementById('search-empty-state').classList.add('hidden');
+            document.getElementById('search-roll-number').value = '';
+
+            document.getElementById('search-res-name').innerText = '';
+            document.getElementById('search-res-roll').innerText = '';
+            document.getElementById('search-res-email').innerText = '';
+            document.getElementById('search-bookings-container').innerHTML = '';
+            document.getElementById('blacklist-status-body').innerHTML = '';
+            document.getElementById('blacklist-history-body').innerHTML = '';
+            document.getElementById('btn-remove-blacklist').classList.add('hidden');
+            closeStudentEditForm();
+
+            currentSearchedStudent = null;
+            currentActiveRestrictions = [];
+
+            document.getElementById('search-roll-number').focus();
+        }
+
+        // Opens the inline student edit form for the student currently shown.
+        function openStudentEditForm() {
+            if (!currentSearchedStudent || !currentSearchedStudent.id) {
+                showDashboardAlert('This student has no editable record on file yet.', true);
+                return;
+            }
+            document.getElementById('edit-student-roll').value = currentSearchedStudent.roll_number || '';
+            document.getElementById('edit-student-name').value = currentSearchedStudent.name || '';
+            document.getElementById('edit-student-email').value = currentSearchedStudent.email || '';
+            document.getElementById('student-edit-form').classList.remove('hidden');
+            document.getElementById('btn-edit-student').classList.add('hidden');
+        }
+
+        function closeStudentEditForm() {
+            document.getElementById('student-edit-form').classList.add('hidden');
+            document.getElementById('btn-edit-student').classList.remove('hidden');
+        }
+
+        function setupStudentEditFormEngine() {
+            document.getElementById('student-edit-form').addEventListener('submit', async (e) => {
+                e.preventDefault();
+                if (!currentSearchedStudent || !currentSearchedStudent.id) {
+                    showDashboardAlert('No editable student record is currently selected.', true);
+                    return;
+                }
+                const newRoll = document.getElementById('edit-student-roll').value.trim();
+                const newName = document.getElementById('edit-student-name').value.trim();
+                const newEmail = normalizeUniversityEmail(document.getElementById('edit-student-email').value);
+                if (!newRoll || !newName || !newEmail) {
+                    showDashboardAlert('Enrollment Number, Name and Email ID are all required.', true);
+                    return;
+                }
+                const oldRoll = currentSearchedStudent.roll_number || '';
+                const oldName = currentSearchedStudent.name || '';
+                const oldEmail = currentSearchedStudent.email || '';
+                const changed = newRoll !== oldRoll || newName !== oldName || newEmail !== oldEmail;
+                if (!changed) {
+                    showDashboardAlert('No changes were made.', true);
+                    return;
+                }
+                const confirmMsg = `Update Student Details?\n\nOld:\nEnrollment No: ${oldRoll}\nName: ${oldName}\nEmail: ${oldEmail || 'Not Available'}\n\nNew:\nEnrollment No: ${newRoll}\nName: ${newName}\nEmail: ${newEmail}`;
+                if (!window.confirm(confirmMsg)) return;
+                try {
+                    const res = await authFetch(`/api/students/${currentSearchedStudent.id}`, {
+                        method: 'PUT',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ roll_number: newRoll, name: newName, email: newEmail })
+                    });
+                    const data = await res.json();
+                    if (!res.ok) throw new Error(data.error || 'Student details could not be updated.');
+                    closeStudentEditForm();
+                    showDashboardAlert('Student details updated successfully.', false);
+                    await performStudentSearch(data.student.roll_number);
+                } catch (err) {
+                    showDashboardAlert(err.message, true);
+                }
+            });
+        }
+
+        // ==========================================
+        // RESTRICTED LIST STATUS PANEL + MODALS
+        // ==========================================
+        function formatDisplayDate(ymd) {
+            if (!ymd) return 'Unknown';
+            const parts = ymd.split('-').map(Number);
+            const y = parts[0], m = parts[1], d = parts[2];
+            const months = ['January','February','March','April','May','June','July','August','September','October','November','December'];
+            if (!y || !m || !d) return ymd;
+            return `${d} ${months[m - 1]} ${y}`;
+        }
+
+        // Renders the Restricted List panel from data already returned by
+        // /api/students/full-profile (currently-active restrictions plus the
+        // complete restriction history: who imposed/removed each one and when).
+        function renderRestrictedListPanel(restrictedList) {
+            const body = document.getElementById('blacklist-status-body');
+            const historyBody = document.getElementById('blacklist-history-body');
+            const removeBtn = document.getElementById('btn-remove-blacklist');
+
+            currentActiveRestrictions = (restrictedList && restrictedList.active_restrictions) || [];
+
+            if (currentActiveRestrictions.length === 0) {
+                body.innerHTML = '<span class="inline-block bg-green-50 text-green-800 border border-green-200 px-3 py-1 rounded font-bold text-xs uppercase tracking-wide">Not Restricted</span>';
+                removeBtn.classList.add('hidden');
+            } else {
+                removeBtn.classList.remove('hidden');
+                let html = '<div class="mb-2"><span class="inline-block bg-red-50 text-red-800 border border-red-200 px-3 py-1 rounded font-bold text-xs uppercase tracking-wide">Booking Restriction Imposed</span></div><div class="grid grid-cols-1 md:grid-cols-2 gap-2">';
+                currentActiveRestrictions.forEach(r => {
+                    html += `<div class="text-xs bg-red-50 border border-red-100 rounded p-2"><span class="font-bold text-gray-800">${escapeHtml(r.sport_name)}</span><br><span class="text-gray-500">Restricted until: ${formatDisplayDate((r.end_datetime || '').split(' ')[0])}</span>${r.reason ? `<br><span class="text-gray-500">Reason: ${escapeHtml(r.reason)}</span>` : ''}</div>`;
+                });
+                html += '</div>';
+                body.innerHTML = html;
+            }
+
+            const history = (restrictedList && restrictedList.restriction_history) || [];
+            if (history.length === 0) {
+                historyBody.innerHTML = '';
+            } else {
+                historyBody.innerHTML = '<div class="text-[10px] uppercase font-bold text-gray-400 tracking-wide mb-1 mt-2">Restriction History</div>' + history.map(r => {
+                    const removedLine = r.status === 'removed'
+                        ? `Removed by ${escapeHtml(r.removed_by || 'Unknown')} on ${formatDisplayDate((r.removed_at || '').split(' ')[0])}`
+                        : (r.status === 'active' ? 'Currently active' : 'Expired');
+                    return `<div class="border-b border-gray-100 py-1.5">
+                        <span class="font-semibold text-gray-700">${escapeHtml(r.sport_name)}</span> &middot;
+                        Imposed by ${escapeHtml(r.created_by || 'Unknown')} on ${formatDisplayDate((r.created_at || '').split(' ')[0])} &middot;
+                        ${removedLine}
+                        ${r.reason ? `<div class="text-gray-500">Reason: ${escapeHtml(r.reason)}</div>` : ''}
+                    </div>`;
+                }).join('');
+            }
+        }
+
+        // Re-fetches the current student's full profile after a restrict /
+        // remove-restriction action, so the panel and history reflect the change.
+        async function refreshCurrentStudentSearch() {
+            if (currentSearchedStudent && currentSearchedStudent.roll_number) {
+                await performStudentSearch(currentSearchedStudent.roll_number);
+            }
+        }
+
+        function openBlacklistModal() {
+            if (!currentSearchedStudent) return;
+            document.getElementById('blacklist-select-error').classList.add('hidden');
+            document.getElementById('blacklist-duration-value').value = '';
+            document.getElementById('blacklist-duration-unit').value = 'days';
+            document.getElementById('blacklist-reason').value = '';
+
+            const box = document.getElementById('blacklist-sport-checkboxes');
+            box.innerHTML = '';
+            internalSportsLayoutCache.forEach(sport => {
+                box.insertAdjacentHTML('beforeend', `<label class="flex items-center gap-1.5"><input type="checkbox" class="blacklist-sport-cb" value="${sport.id}" data-name="${escapeHtml(sport.name)}"> ${escapeHtml(sport.name)}</label>`);
+            });
+
+            document.getElementById('blacklist-select-view').classList.remove('hidden');
+            document.getElementById('blacklist-confirm-view').classList.add('hidden');
+            document.getElementById('blacklist-modal').classList.remove('hidden');
+        }
+
+        function closeBlacklistModal() {
+            document.getElementById('blacklist-modal').classList.add('hidden');
+        }
+
+        function proceedToBlacklistConfirm() {
+            const errEl = document.getElementById('blacklist-select-error');
+            const selected = Array.from(document.querySelectorAll('.blacklist-sport-cb:checked'));
+            const value = parseInt(document.getElementById('blacklist-duration-value').value, 10);
+            const unit = document.getElementById('blacklist-duration-unit').value;
+            const reason = document.getElementById('blacklist-reason').value.trim();
+
+            if (selected.length === 0) {
+                errEl.innerText = 'Please select at least one sport.';
+                errEl.classList.remove('hidden');
+                return;
+            }
+            if (!value || value <= 0) {
+                errEl.innerText = 'Please enter a valid duration value.';
+                errEl.classList.remove('hidden');
+                return;
+            }
+            if (!reason) {
+                errEl.innerText = 'Please enter the reason for this restriction.';
+                errEl.classList.remove('hidden');
+                return;
+            }
+            errEl.classList.add('hidden');
+
+            const istNow = new Date(new Date().toLocaleString("en-US", { timeZone: "Asia/Kolkata" }));
+            const expiry = new Date(istNow.getTime());
+            if (unit === 'days') expiry.setDate(expiry.getDate() + value);
+            else if (unit === 'months') expiry.setMonth(expiry.getMonth() + value);
+            else if (unit === 'years') expiry.setFullYear(expiry.getFullYear() + value);
+
+            const toYMD = (d) => `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
+
+            document.getElementById('blacklist-confirm-name').innerText = currentSearchedStudent.name || 'Unknown';
+            document.getElementById('blacklist-confirm-roll').innerText = currentSearchedStudent.roll_number || '';
+            document.getElementById('blacklist-confirm-sports').innerText = selected.map(cb => cb.dataset.name).join(', ');
+            document.getElementById('blacklist-confirm-duration').innerText = `${value} ${unit.charAt(0).toUpperCase() + unit.slice(1)}`;
+            document.getElementById('blacklist-confirm-reason').innerText = reason;
+            document.getElementById('blacklist-confirm-start').innerText = formatDisplayDate(toYMD(istNow));
+            document.getElementById('blacklist-confirm-expiry').innerText = formatDisplayDate(toYMD(expiry));
+
+            document.getElementById('blacklist-select-view').classList.add('hidden');
+            document.getElementById('blacklist-confirm-view').classList.remove('hidden');
+        }
+
+        function backToBlacklistSelect() {
+            document.getElementById('blacklist-confirm-view').classList.add('hidden');
+            document.getElementById('blacklist-select-view').classList.remove('hidden');
+        }
+
+        async function submitBlacklist() {
+            const selected = Array.from(document.querySelectorAll('.blacklist-sport-cb:checked')).map(cb => cb.value);
+            const value = parseInt(document.getElementById('blacklist-duration-value').value, 10);
+            const unit = document.getElementById('blacklist-duration-unit').value;
+
+            const payload = {
+                roll_number: currentSearchedStudent.roll_number,
+                student_name: currentSearchedStudent.name,
+                sport_ids: selected,
+                duration_value: value,
+                duration_unit: unit,
+                reason: document.getElementById('blacklist-reason').value.trim(),
+                created_by: currentSessionUser ? currentSessionUser.username : null
+            };
+
+            try {
+                const res = await authFetch('/api/blacklist/create', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(payload) });
+                const data = await res.json();
+                if (!res.ok) throw new Error(data.error || 'Failed to apply restriction.');
+
+                closeBlacklistModal();
+                showDashboardAlert(`Booking Restriction Imposed: ${data.message || 'Student restricted successfully.'}`, false);
+                await refreshCurrentStudentSearch();
+            } catch (err) {
+                closeBlacklistModal();
+                showDashboardAlert(err.message, true);
+            }
+        }
+
+        function openRemoveBlacklistModal() {
+            if (!currentActiveRestrictions || currentActiveRestrictions.length === 0) return;
+            const list = document.getElementById('blacklist-remove-sport-list');
+            list.innerHTML = currentActiveRestrictions.map(r => `<li>${escapeHtml(r.sport_name)}</li>`).join('');
+            document.getElementById('blacklist-remove-modal').classList.remove('hidden');
+        }
+
+        function closeRemoveBlacklistModal() {
+            document.getElementById('blacklist-remove-modal').classList.add('hidden');
+        }
+
+        async function confirmRemoveBlacklist() {
+            if (!currentSearchedStudent || !currentActiveRestrictions.length) { closeRemoveBlacklistModal(); return; }
+            const sportIds = currentActiveRestrictions.map(r => r.sport_id);
+
+            try {
+                const res = await authFetch('/api/blacklist/remove', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ roll_number: currentSearchedStudent.roll_number, sport_ids: sportIds, removed_by: currentSessionUser ? currentSessionUser.username : null })
+                });
+                const data = await res.json();
+                if (!res.ok) throw new Error(data.error || 'Failed to remove restriction.');
+
+                closeRemoveBlacklistModal();
+                showDashboardAlert('Booking restriction removed successfully.', false);
+                await refreshCurrentStudentSearch();
+            } catch (err) {
+                closeRemoveBlacklistModal();
+                showDashboardAlert(err.message, true);
+            }
+        }
+
+        // ==========================================
+        // CANCELLATION MODAL ENGINE
+        // ==========================================
+        function executeImmediateCancellation(bookingId) {
+            document.getElementById('cancel-booking-id').value = bookingId;
+            document.getElementById('cancel-reason').value = '';
+            document.getElementById('cancel-modal').classList.remove('hidden');
+        }
+
+        function closeCancelModal() {
+            document.getElementById('cancel-modal').classList.add('hidden');
+        }
+
+        async function confirmCancellation() {
+            const bookingId = document.getElementById('cancel-booking-id').value;
+            const reason = document.getElementById('cancel-reason').value.trim();
+            if (!reason) return alert('Cancellation reason is mandatory to notify the student appropriately.');
+
+            try {
+                const res = await authFetch('/api/bookings/cancel', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ booking_id: bookingId, cancellation_reason: reason, cancelled_by: currentSessionUser.username, admin_name: currentSessionUser.username })
+                });
+                
+                if (res.ok) {
+                    closeCancelModal();
+                    loadActiveReservationsLogGrid();
+                    showDashboardAlert('Booking Terminated successfully.', false);
+                } else { const d = await res.json(); alert(d.error || 'Failed cancellation routine request.'); }
+            } catch (err) { console.error(err); }
+        }
+
+        async function cancelBulkEvent(bulkGroupId) {
+            if(!confirm('DANGER: This will instantly cancel every single slot reserved inside this Bulk Event block. Continue?')) return;
+            try {
+                const res = await authFetch('/api/admin/bookings/bulk/cancel', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ bulk_group_id: bulkGroupId, admin_name: currentSessionUser.username })
+                });
+                if(res.ok) {
+                    loadActiveReservationsLogGrid();
+                    showDashboardAlert('Entire Bulk Event Block terminated successfully.', false);
+                } else { const d = await res.json(); alert(d.error); }
+            } catch (err) { console.error(err); }
+        }
+
+        function setupFormInterceptors() {
+            // Existing Student Booking
+            document.getElementById('booking-form').addEventListener('submit', async (e) => {
+                e.preventDefault();
+                
+                const bookingDate = document.getElementById('book-date').value;
+                const endTime = document.getElementById('book-end').value;
+                
+                const istNow = new Date(new Date().toLocaleString("en-US", {timeZone: "Asia/Kolkata"}));
+                const currentYear = istNow.getFullYear();
+                const currentMonth = String(istNow.getMonth() + 1).padStart(2, '0');
+                const currentDay = String(istNow.getDate()).padStart(2, '0');
+                const currentDateStr = `${currentYear}-${currentMonth}-${currentDay}`;
+                const currentHours = String(istNow.getHours()).padStart(2, '0');
+                const currentMinutes = String(istNow.getMinutes()).padStart(2, '0');
+                const currentTimeStr = `${currentHours}:${currentMinutes}`;
+                
+                if (bookingDate < currentDateStr) {
+                    showDashboardAlert('Booking Rejected: Cannot book a time slot for a past date.', true);
+                    return;
+                } else if (bookingDate === currentDateStr && endTime <= currentTimeStr) {
+                    showDashboardAlert('Booking Rejected: The selected time slot has already ended.', true);
+                    return;
+                }
+                
+               const payload = {
+                   name: document.getElementById('book-name').value.trim(),
+                   roll_number: document.getElementById('book-roll').value.trim(),
+                   email: normalizeUniversityEmail(document.getElementById('book-email').value),
+                    additional_players: readAdditionalPlayers(),
+                   court_id: document.getElementById('book-court').value,
+                    booking_date: bookingDate,
+                    start_time: document.getElementById('book-start').value,
+                    end_time: endTime,
+                    admin_name: currentSessionUser ? currentSessionUser.username : null
+                };
+                
+                try {
+                    const res = await authFetch('/api/bookings/create', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(payload) });
+                    const data = await res.json();
+                    if (!res.ok) throw new Error(data.error || 'Server rejected request.');
+                    
+                    showDashboardAlert(`SUCCESS! Reservation Locked. Local Token Ledger Issued: ${data.token}`, false);
+                   document.getElementById('booking-form').reset();
+                    document.getElementById('additional-player-count').value = '0';
+                    renderAdditionalPlayerFields();
+                    
+                    const rF = document.getElementById('book-roll');
+                    const nF = document.getElementById('book-name');
+                            const eF = document.getElementById('book-email');
+                    
+                    rF.value = '';
+                    nF.value = '';
+                    eF.value = '';
+                    
+                    nF.setAttribute('disabled', 'true'); nF.classList.add('bg-gray-100');
+                            eF.setAttribute('disabled', 'true'); eF.classList.add('bg-gray-100');
+                    
+                    rF.focus();
+                } catch (err) { showDashboardAlert(err.message, true); }
+            });
+
+            // Admin Bulk Booking
+            document.getElementById('bulk-booking-form').addEventListener('submit', async (e) => {
+                e.preventDefault();
+                
+                const startDate = document.getElementById('bulk-start-date').value;
+                const endTime = document.getElementById('bulk-end-time').value;
+                
+                const istNow = new Date(new Date().toLocaleString("en-US", {timeZone: "Asia/Kolkata"}));
+                const currentYear = istNow.getFullYear();
+                const currentMonth = String(istNow.getMonth() + 1).padStart(2, '0');
+                const currentDay = String(istNow.getDate()).padStart(2, '0');
+                const currentDateStr = `${currentYear}-${currentMonth}-${currentDay}`;
+                const currentHours = String(istNow.getHours()).padStart(2, '0');
+                const currentMinutes = String(istNow.getMinutes()).padStart(2, '0');
+                const currentTimeStr = `${currentHours}:${currentMinutes}`;
+                
+                if (startDate < currentDateStr) {
+                    showDashboardAlert('Booking Rejected: Cannot book a time slot for a past date.', true);
+                    return;
+                } else if (startDate === currentDateStr && endTime <= currentTimeStr) {
+                    showDashboardAlert('Booking Rejected: The selected time slot has already ended.', true);
+                    return;
+                }
+                
+                const courtsSelect = document.getElementById('bulk-courts');
+                const selectedCourts = Array.from(courtsSelect.selectedOptions).map(opt => opt.value);
+                const selectedDays = Array.from(document.querySelectorAll('.bulk-day:checked')).map(cb => cb.value);
+                
+                if(selectedCourts.length === 0) return showDashboardAlert("Please select at least one court.", true);
+                if(selectedDays.length === 0) return showDashboardAlert("Please select at least one valid day of the week.", true);
+
+                const payload = {
+                    court_ids: selectedCourts,
+                    start_date: startDate,
+                    end_date: document.getElementById('bulk-end-date').value,
+                    start_time: document.getElementById('bulk-start-time').value,
+                    end_time: endTime,
+                    days: selectedDays,
+                    reason: document.getElementById('bulk-reason').value.trim(),
+                    admin_name: currentSessionUser.username,
+                    skip_conflicts: document.getElementById('bulk-skip-conflicts').checked
+                };
+
+                try {
+                    const res = await authFetch('/api/admin/bookings/bulk', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(payload) });
+                    const data = await res.json();
+                    
+                    if (res.status === 409 && data.conflicts) {
+                        const failedList = data.conflicts.map(c => ({
+                            date: c.booking_date,
+                            start_time: c.start_time,
+                            end_time: c.end_time,
+                            sport_name: c.sport_name,
+                            court_name: c.court_name,
+                            student_name: c.student_name,
+                            roll_number: c.roll_number,
+                            reason: c.booking_type === 'bulk' ? (c.reason || 'Existing bulk/event reservation') : 'Slot already booked by a student'
+                        }));
+                        showBulkBookingAlert({ message: data.error, failed: failedList });
+                    } else if (!res.ok) {
+                        throw new Error(data.error || 'Bulk generation failed.');
+                    } else {
+                        showDashboardAlert(`Bulk Operation Complete: ${data.message || 'Successfully Generated.'}`, false);
+                    }
+                    
+                    if (res.ok) {
+                        document.getElementById('bulk-booking-form').reset();
+                        loadActiveReservationsLogGrid();
+                    }
+                } catch (err) { 
+                    showDashboardAlert(`Warning: ${err.message}`, true);
+                }
+            });
+
+            // Account management: account creation, registered-email OTP deletion,
+            // and post-deletion session handling. The server is authoritative for
+            // the selected account, email destination, OTP and permissions.
+            window.loadAdminAccounts = async function loadAdminAccounts() {
+                const select = document.getElementById('admin-delete-user');
+                if (!select || !currentSessionUser || currentSessionUser.role !== 'admin') return;
+                try {
+                    const res = await authFetch('/api/admin/users');
+                    const data = await res.json();
+                    if (!res.ok) throw new Error(data.error || 'Unable to load accounts.');
+                    select.innerHTML = '<option value="">-- Select Admin / Helpdesk Account --</option>' +
+                        (data.users || []).map(u => `<option value="${Number(u.id)}">${escapeHtml(u.username)} — ${escapeHtml(u.role)} — ${escapeHtml(u.email || 'No email')}</option>`).join('');
+                } catch (err) {
+                    select.innerHTML = '<option value="">Unable to load accounts</option>';
+                }
+            }
+
+            let adminDeleteToken = null;
+            let adminDeleteExpiry = 0;
+            let adminDeleteTimer = null;
+            function updateAdminDeleteTimer() {
+                const el = document.getElementById('admin-delete-otp-timer');
+                if (!el) return;
+                const remaining = Math.max(0, adminDeleteExpiry - Date.now());
+                const seconds = Math.ceil(remaining / 1000);
+                if (seconds <= 0) {
+                    el.innerText = 'OTP expired. Request a new OTP to continue.';
+                    if (adminDeleteTimer) clearInterval(adminDeleteTimer);
+                    return;
+                }
+                const mm = String(Math.floor(seconds / 60)).padStart(2, '0');
+                const ss = String(seconds % 60).padStart(2, '0');
+                el.innerText = `OTP expires in ${mm}:${ss}`;
+            }
+
+            async function requestAdminAccountDeletion() {
+                const select = document.getElementById('admin-delete-user');
+                const userId = Number(select.value);
+                if (!userId) return alert('Please select an Admin or Helpdesk account.');
+                const selectedText = select.options[select.selectedIndex].text;
+                if (!confirm(`Request OTP to delete this account?\n\n${selectedText}\n\nThe account will NOT be deleted until the OTP is verified.`)) return;
+                const button = document.getElementById('admin-delete-request-btn');
+                button.disabled = true;
+                try {
+                    const res = await authFetch('/api/admin/users/delete/request', {
+                        method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ user_id: userId })
+                    });
+                    const data = await res.json();
+                    if (!res.ok) throw new Error(data.error || 'Unable to request account deletion.');
+                    adminDeleteToken = data.delete_token;
+                    adminDeleteExpiry = Date.parse(data.otp_expires_at);
+                    document.getElementById('admin-delete-otp').value = '';
+                    document.getElementById('admin-delete-otp-message').innerText = `OTP has been sent to: ${data.email}\n\nEnter the OTP to confirm deletion of account: ${data.username}`;
+                    document.getElementById('admin-delete-otp-panel').classList.remove('hidden');
+                    if (adminDeleteTimer) clearInterval(adminDeleteTimer);
+                    updateAdminDeleteTimer();
+                    adminDeleteTimer = setInterval(updateAdminDeleteTimer, 1000);
+                    document.getElementById('admin-delete-otp').focus();
+                } catch (err) { alert(err.message); }
+                finally { button.disabled = false; }
+            }
+
+            async function confirmAdminAccountDeletion() {
+                const otp = document.getElementById('admin-delete-otp').value.trim();
+                if (!adminDeleteToken) return alert('Please request a new deletion OTP.');
+                if (!/^\d{6}$/.test(otp)) return alert('Enter the 6-digit OTP.');
+                const button = document.getElementById('admin-delete-confirm-btn');
+                button.disabled = true;
+                try {
+                    const res = await authFetch('/api/admin/users/delete/verify', {
+                        method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ delete_token: adminDeleteToken, otp })
+                    });
+                    const data = await res.json();
+                    if (!res.ok) throw new Error(data.error || 'Account deletion failed.');
+                    adminDeleteToken = null;
+                    if (adminDeleteTimer) clearInterval(adminDeleteTimer);
+                    document.getElementById('admin-delete-otp-panel').classList.add('hidden');
+                    document.getElementById('admin-delete-user').value = '';
+                    alert(data.message || 'Account deleted successfully.');
+                    await loadAdminAccounts();
+                    if (data.self_deleted) {
+                        currentSessionUser = null;
+                        authToken = null;
+                        document.getElementById('app-view').classList.add('hidden');
+                        document.getElementById('login-view').classList.remove('hidden');
+                        clearLoginUsernameField();
+                        document.getElementById('login-password').value = '';
+                    }
+                } catch (err) { alert(err.message); }
+                finally { button.disabled = false; }
+            }
+
+            document.getElementById('admin-delete-request-btn')?.addEventListener('click', requestAdminAccountDeletion);
+            document.getElementById('admin-delete-confirm-btn')?.addEventListener('click', confirmAdminAccountDeletion);
+            window.loadAdminAccounts();
+
+            // Legacy Admin Config Tools
+            document.getElementById('admin-sport-form').addEventListener('submit', async (e) => {
+                e.preventDefault();
+                try {
+                    const res = await authFetch('/api/admin/sports/add', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ name: document.getElementById('admin-sport-name').value.trim() }) });
+                    if(res.ok) { alert('Core Dynamic Sport Registered.'); document.getElementById('admin-sport-form').reset(); refreshSportsLayoutMappingOptions(); loadAdministrativeIntelligenceDashboard(); }
+                    else { const d = await res.json(); alert(d.error); }
+                } catch(err) {}
+            });
+
+            document.getElementById('admin-court-form').addEventListener('submit', async (e) => {
+                e.preventDefault();
+                try {
+                    const res = await authFetch('/api/admin/courts/add', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ sport_id: document.getElementById('admin-court-sport').value, court_name: document.getElementById('admin-court-name').value.trim() }) });
+                    if(res.ok) { alert('Asset Partition successfully generated.'); document.getElementById('admin-court-form').reset(); refreshSportsLayoutMappingOptions(); }
+                    else { const d = await res.json(); alert(d.error); }
+                } catch(err) {}
+            });
+
+            document.getElementById('admin-remove-court-form').addEventListener('submit', async (e) => {
+                e.preventDefault();
+                const courtId = document.getElementById('admin-remove-court-id').value;
+                if (!courtId || !confirm('WARNING: Permanently remove this court asset?')) return;
+                try {
+                    const res = await authFetch(`/api/admin/courts/remove/${courtId}`, { method: 'DELETE' });
+                    if (res.ok) { alert('Court removed.'); document.getElementById('admin-remove-court-form').reset(); refreshSportsLayoutMappingOptions(); }
+                    else { const d = await res.json(); alert(d.error); }
+                } catch(err) {}
+            });
+
+            document.getElementById('admin-user-form').addEventListener('submit', async (e) => {
+                e.preventDefault();
+                try {
+                    const res = await authFetch('/api/admin/users/create', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ username: document.getElementById('admin-user-name').value.trim(), email: document.getElementById('admin-user-email').value.trim(), password: document.getElementById('admin-user-pass').value, role: document.getElementById('admin-user-role').value }) });
+                    if(res.ok) { alert('Personnel Node Registered.'); document.getElementById('admin-user-form').reset(); }
+                    else { const d = await res.json(); alert(d.error); }
+                } catch(err) {}
+            });
+
+
+        }
+    </script>
+</body>
+</html>
